@@ -29,16 +29,18 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  errorHandler(err, req, res, next);
+// 404 handler (for unmatched routes)
+app.use((req, res, next) => {
+  res.status(404).json({
+    success: false,
+    error: {
+      message: 'Route not found',
+    },
+  });
 });
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ error: 'Route not found' });
-});
+// Global error handling middleware (must be last)
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

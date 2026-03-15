@@ -8,21 +8,39 @@ export class AppError extends Error {
   }
 }
 
-//error handler middleware
+//error handler middleware (global)
 export const errorHandler = (err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
-  const message = err.message || 'Internal Server Error';
+  // Log all errors on the server side
+  console.error(err);
 
-  const errorResponse = {
-    success: false,
-    error: {
-      message,
-      ...(err.errors && { errors: err.errors }),
-      ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
-    },
+  const isProd = process.env.NODE_ENV === 'production';
+  const statusCode = err.statusCode && Number.isInteger(err.statusCode)
+    ? err.statusCode
+    : 500;
+
+  const message =
+    err instanceof AppError && err.message
+      ? err.message
+      : statusCode === 500
+      ? 'Internal Server Error'
+      : err.message || 'Error';
+
+  const errorBody = {
+    message,
   };
 
-  res.status(statusCode).json(errorResponse);
+  if (err.errors) {
+    errorBody.errors = err.errors;
+  }
+
+  if (!isProd) {
+    errorBody.stack = err.stack;
+  }
+
+  res.status(statusCode).json({
+    success: false,
+    error: errorBody,
+  });
 };
 
 //async handler wrapper to catch erros in async route handlers
