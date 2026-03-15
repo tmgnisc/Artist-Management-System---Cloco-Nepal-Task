@@ -15,6 +15,15 @@ router.get('/', (req, res) => {
   });
 });
 
+// health check endpoint for API
+router.get('/health', (req, res) => {
+  res.json({
+    success: true,
+    status: 'OK',
+    message: 'API health check passed',
+  });
+});
+
 // Auth routes
 router.use('/auth', authRoutes);
 
