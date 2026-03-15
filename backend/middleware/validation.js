@@ -112,3 +112,134 @@ export const validateRefreshToken = [
   
   validate,
 ];
+
+/**
+ * Validation rules for creating user (admin)
+ */
+export const validateCreateUser = [
+  body('first_name')
+    .trim()
+    .notEmpty()
+    .withMessage('First name is required')
+    .isLength({ min: 2, max: 255 })
+    .withMessage('First name must be between 2 and 255 characters'),
+  
+  body('last_name')
+    .trim()
+    .notEmpty()
+    .withMessage('Last name is required')
+    .isLength({ min: 2, max: 255 })
+    .withMessage('Last name must be between 2 and 255 characters'),
+  
+  body('email')
+    .trim()
+    .notEmpty()
+    .withMessage('Email is required')
+    .isEmail()
+    .withMessage('Please provide a valid email address')
+    .normalizeEmail(),
+  
+  body('password')
+    .notEmpty()
+    .withMessage('Password is required')
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters long')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number'),
+  
+  body('phone')
+    .optional()
+    .trim()
+    .isMobilePhone()
+    .withMessage('Please provide a valid phone number'),
+  
+  body('dob')
+    .optional()
+    .isISO8601()
+    .withMessage('Date of birth must be a valid date (YYYY-MM-DD)'),
+  
+  body('gender')
+    .notEmpty()
+    .withMessage('Gender is required')
+    .isIn(['m', 'f', 'o'])
+    .withMessage('Gender must be one of: m, f, o'),
+  
+  body('address')
+    .optional()
+    .trim()
+    .isLength({ max: 1000 })
+    .withMessage('Address must not exceed 1000 characters'),
+  
+  body('role')
+    .optional()
+    .isIn(['super_admin', 'artist_manager', 'artist'])
+    .withMessage('Role must be one of: super_admin, artist_manager, artist'),
+  
+  validate,
+];
+
+/**
+ * Validation rules for updating user (admin)
+ */
+export const validateUpdateUser = [
+  body('first_name')
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage('First name cannot be empty')
+    .isLength({ min: 2, max: 255 })
+    .withMessage('First name must be between 2 and 255 characters'),
+  
+  body('last_name')
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage('Last name cannot be empty')
+    .isLength({ min: 2, max: 255 })
+    .withMessage('Last name must be between 2 and 255 characters'),
+  
+  body('email')
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage('Email cannot be empty')
+    .isEmail()
+    .withMessage('Please provide a valid email address')
+    .normalizeEmail(),
+  
+  body('password')
+    .optional()
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters long')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number'),
+  
+  body('phone')
+    .optional()
+    .trim()
+    .isMobilePhone()
+    .withMessage('Please provide a valid phone number'),
+  
+  body('dob')
+    .optional()
+    .isISO8601()
+    .withMessage('Date of birth must be a valid date (YYYY-MM-DD)'),
+  
+  body('gender')
+    .optional()
+    .isIn(['m', 'f', 'o'])
+    .withMessage('Gender must be one of: m, f, o'),
+  
+  body('address')
+    .optional()
+    .trim()
+    .isLength({ max: 1000 })
+    .withMessage('Address must not exceed 1000 characters'),
+  
+  body('role')
+    .optional()
+    .isIn(['super_admin', 'artist_manager', 'artist'])
+    .withMessage('Role must be one of: super_admin, artist_manager, artist'),
+  
+  validate,
+];

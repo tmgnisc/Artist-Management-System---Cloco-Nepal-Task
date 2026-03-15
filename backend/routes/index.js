@@ -1,5 +1,6 @@
 import express from 'express';
 import authRoutes from './auth.js';
+import userRoutes from './user.js';
 
 const router = express.Router();
 
@@ -14,5 +15,8 @@ router.get('/', (req, res) => {
 
 // Auth routes
 router.use('/auth', authRoutes);
+
+// User management routes (super_admin only)
+router.use('/users', userRoutes);
 
 export default router;
