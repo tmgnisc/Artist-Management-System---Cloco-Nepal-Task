@@ -2,7 +2,7 @@ import express from 'express';
 
 const router = express.Router();
 
-// Example route
+// testing route only
 router.get('/', (req, res) => {
   res.json({ message: 'API is working!' });
 });

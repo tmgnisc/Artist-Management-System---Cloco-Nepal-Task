@@ -14,8 +14,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Database connection
-createConnection();
+// Database connection and initialization
+createConnection().catch((error) => {
+  console.error('Failed to connect to database:', error);
+  process.exit(1);
+});
 
 // Routes
 app.use('/api', routes);
