@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { createConnection } from './config/database.js';
 import routes from './routes/index.js';
+import { errorHandler } from './utils/errors.js';
 
 dotenv.config();
 
@@ -31,10 +32,7 @@ app.get('/health', (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ 
-    error: 'Something went wrong!',
-    message: err.message 
-  });
+  errorHandler(err, req, res, next);
 });
 
 // 404 handler
