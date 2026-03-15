@@ -1,6 +1,7 @@
 import express from 'express';
 import authRoutes from './auth.js';
 import userRoutes from './user.js';
+import artistRoutes from './artist.js';
 
 const router = express.Router();
 
@@ -18,5 +19,8 @@ router.use('/auth', authRoutes);
 
 // User management routes (super_admin only)
 router.use('/users', userRoutes);
+
+// Artist management routes (super_admin, artist)
+router.use('/artists', artistRoutes);
 
 export default router;
