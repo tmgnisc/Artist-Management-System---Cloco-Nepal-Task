@@ -1,4 +1,4 @@
-import { body, validationResult } from 'express-validator';
+import { body, validationResult, query } from 'express-validator';
 import { AppError } from '../utils/errors.js';
 
 /**
@@ -243,3 +243,160 @@ export const validateUpdateUser = [
   
   validate,
 ];
+
+//validation rules for creating a song
+export const validateCreateSong = [
+  body('title')
+    .trim()
+    .notEmpty()
+    .withMessage('Title is required')
+    .isLength({ max: 255 })
+    .withMessage('Title must not exceed 255 characters'),
+
+  body('album_name')
+    .optional()
+    .trim()
+    .isLength({ max: 255 })
+    .withMessage('Album name must not exceed 255 characters'),
+
+  body('genre')
+    .notEmpty()
+    .withMessage('Genre is required')
+    .isIn(['rnb', 'country', 'classic', 'rock', 'jazz'])
+    .withMessage('Genre must be one of: rnb, country, classic, rock, jazz'),
+
+  validate,
+];
+
+//validation rules for updating a song
+export const validateUpdateSong = [
+  body('title')
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage('Title cannot be empty')
+    .isLength({ max: 255 })
+    .withMessage('Title must not exceed 255 characters'),
+
+  body('album_name')
+    .optional()
+    .trim()
+    .isLength({ max: 255 })
+    .withMessage('Album name must not exceed 255 characters'),
+
+  body('genre')
+    .optional()
+    .isIn(['rnb', 'country', 'classic', 'rock', 'jazz'])
+    .withMessage('Genre must be one of: rnb, country, classic, rock, jazz'),
+
+  validate,
+];
+
+//validation rules for listing songs (admin view)
+export const validateListSongs = [
+  query('page')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('Page must be a positive integer'),
+
+  query('limit')
+    .optional()
+    .isInt({ min: 1, max: 100 })
+    .withMessage('Limit must be between 1 and 100'),
+
+  query('genre')
+    .optional()
+    .isIn(['rnb', 'country', 'classic', 'rock', 'jazz'])
+    .withMessage('Genre must be one of: rnb, country, classic, rock, jazz'),
+
+  query('artistId')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('artistId must be a positive integer'),
+
+  query('title')
+    .optional()
+    .trim()
+    .isLength({ max: 255 })
+    .withMessage('Title filter must not exceed 255 characters'),
+
+  validate,
+];
+
+//validation rules for creating an artist
+export const validateCreateArtist = [
+  body('name')
+    .trim()
+    .notEmpty()
+    .withMessage('Name is required')
+    .isLength({ max: 255 })
+    .withMessage('Name must not exceed 255 characters'),
+
+  body('dob')
+    .optional()
+    .isISO8601()
+    .withMessage('Date of birth must be a valid date (YYYY-MM-DD)'),
+
+  body('gender')
+    .optional()
+    .isIn(['m', 'f', 'o'])
+    .withMessage('Gender must be one of: m, f, o'),
+
+  body('address')
+    .optional()
+    .trim()
+    .isLength({ max: 1000 })
+    .withMessage('Address must not exceed 1000 characters'),
+
+  body('first_release_year')
+    .optional()
+    .isInt({ min: 1900, max: new Date().getFullYear() })
+    .withMessage('First release year must be a valid year'),
+
+  body('no_of_albums_released')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage('Number of albums released must be a non-negative integer'),
+
+  validate,
+];
+
+//validation rules for updating an artist
+export const validateUpdateArtist = [
+  body('name')
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage('Name cannot be empty')
+    .isLength({ max: 255 })
+    .withMessage('Name must not exceed 255 characters'),
+
+  body('dob')
+    .optional()
+    .isISO8601()
+    .withMessage('Date of birth must be a valid date (YYYY-MM-DD)'),
+
+  body('gender')
+    .optional()
+    .isIn(['m', 'f', 'o'])
+    .withMessage('Gender must be one of: m, f, o'),
+
+  body('address')
+    .optional()
+    .trim()
+    .isLength({ max: 1000 })
+    .withMessage('Address must not exceed 1000 characters'),
+
+  body('first_release_year')
+    .optional()
+    .isInt({ min: 1900, max: new Date().getFullYear() })
+    .withMessage('First release year must be a valid year'),
+
+  body('no_of_albums_released')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage('Number of albums released must be a non-negative integer'),
+
+  validate,
+];
+
