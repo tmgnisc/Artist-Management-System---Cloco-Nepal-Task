@@ -6,6 +6,16 @@ import {
   updateUser,
   type User,
 } from '../services/userService'
+import {
+  listArtists,
+  type Artist,
+  type ArtistListResponse,
+} from '../services/artistService'
+import {
+  listAllSongs,
+  type Song,
+  type SongListResponse,
+} from '../services/songService'
 import { useToast } from '../components/ToastProvider'
 
 type SuperAdminDashboardProps = {
@@ -21,6 +31,23 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
   currentUser,
 }) => {
   const [active, setActive] = useState<'home' | 'artists' | 'songs' | 'users'>('home')
+  const [stats, setStats] = useState<{
+    artistCount: number
+    songCount: number
+    userCount: number
+  }>({ artistCount: 0, songCount: 0, userCount: 0 })
+
+  const [artists, setArtists] = useState<Artist[]>([])
+  const [artistsPage, setArtistsPage] = useState(1)
+  const [artistsTotalPages, setArtistsTotalPages] = useState(1)
+  const [artistsLoading, setArtistsLoading] = useState(false)
+  const [artistsError, setArtistsError] = useState<string | null>(null)
+
+  const [songs, setSongs] = useState<Song[]>([])
+  const [songsPage, setSongsPage] = useState(1)
+  const [songsTotalPages, setSongsTotalPages] = useState(1)
+  const [songsLoading, setSongsLoading] = useState(false)
+  const [songsError, setSongsError] = useState<string | null>(null)
   const [users, setUsers] = useState<User[]>([])
   const [usersLoading, setUsersLoading] = useState(false)
   const [usersError, setUsersError] = useState<string | null>(null)
@@ -59,6 +86,26 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
   const [deleteLoading, setDeleteLoading] = useState(false)
   const { showToast } = useToast()
 
+  const updateStatsFromArtists = (res: ArtistListResponse) => {
+    setStats((prev) => ({
+      ...prev,
+      artistCount: res.pagination.totalItems ?? res.artists.length,
+    }))
+  }
+
+  const updateStatsFromSongs = (res: SongListResponse) => {
+    setStats((prev) => ({
+      ...prev,
+      songCount: res.pagination.totalItems ?? res.songs.length,
+    }))
+  }
+
+  const updateStatsFromUsers = (total: number | undefined) => {
+    if (typeof total === 'number') {
+      setStats((prev) => ({ ...prev, userCount: total }))
+    }
+  }
+
   const fetchUsers = async (page = 1) => {
     try {
       setUsersLoading(true)
@@ -67,6 +114,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
       setUsers(response.users)
       setUsersPage(response.pagination.currentPage)
       setUsersTotalPages(response.pagination.totalPages)
+      updateStatsFromUsers(response.pagination.totalItems)
     } catch (err) {
       setUsersError('Failed to load users')
       showToast('Failed to load users', 'error')
@@ -80,6 +128,71 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
       fetchUsers(usersPage)
     }
   }, [active, usersPage])
+
+  const fetchArtists = async (page = 1) => {
+    try {
+      setArtistsLoading(true)
+      setArtistsError(null)
+      const res = await listArtists({ page, limit: 5 })
+      setArtists(res.artists)
+      setArtistsPage(res.pagination.currentPage)
+      setArtistsTotalPages(res.pagination.totalPages)
+      updateStatsFromArtists(res)
+    } catch {
+      setArtistsError('Failed to load artists')
+      showToast('Failed to load artists', 'error')
+    } finally {
+      setArtistsLoading(false)
+    }
+  }
+
+  const fetchSongs = async (page = 1) => {
+    try {
+      setSongsLoading(true)
+      setSongsError(null)
+      const res = await listAllSongs({ page, limit: 5 })
+      setSongs(res.songs)
+      setSongsPage(res.pagination.currentPage)
+      setSongsTotalPages(res.pagination.totalPages)
+      updateStatsFromSongs(res)
+    } catch {
+      setSongsError('Failed to load songs')
+      showToast('Failed to load songs', 'error')
+    } finally {
+      setSongsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (active === 'artists') {
+      fetchArtists(artistsPage)
+    }
+  }, [active, artistsPage])
+
+  useEffect(() => {
+    if (active === 'songs') {
+      fetchSongs(songsPage)
+    }
+  }, [active, songsPage])
+
+  // initial stats on mount
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const [artistRes, songRes, userRes] = await Promise.all([
+          listArtists({ page: 1, limit: 1 }),
+          listAllSongs({ page: 1, limit: 1 }),
+          listUsers({ page: 1, limit: 1 }),
+        ])
+        updateStatsFromArtists(artistRes)
+        updateStatsFromSongs(songRes)
+        updateStatsFromUsers(userRes.pagination.totalItems)
+      } catch {
+        // ignore initial stats error
+      }
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const navItemBase =
     'w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-colors'
@@ -187,19 +300,25 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                     <p className="text-brand-text-muted">
                       Total artists
                     </p>
-                    <p className="mt-1 text-xl font-semibold">0</p>
+                    <p className="mt-1 text-xl font-semibold">
+                      {stats.artistCount}
+                    </p>
                   </div>
                   <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-3 text-[11px]">
                     <p className="text-brand-text-muted">
                       Total songs
                     </p>
-                    <p className="mt-1 text-xl font-semibold">0</p>
+                    <p className="mt-1 text-xl font-semibold">
+                      {stats.songCount}
+                    </p>
                   </div>
                   <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-3 text-[11px]">
                     <p className="text-brand-text-muted">
                       Total users
                     </p>
-                    <p className="mt-1 text-xl font-semibold">0</p>
+                    <p className="mt-1 text-xl font-semibold">
+                      {stats.userCount}
+                    </p>
                   </div>
                 </div>
 
@@ -218,27 +337,200 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
 
             {active === 'artists' && (
               <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-3 text-[12px]">
-                <h2 className="text-sm font-semibold">
-                  Artists
-                </h2>
-                <p className="mt-2 text-brand-text-muted">
-                  This section will show artist list, filters, and quick
-                  actions. Integration with the artists API can be added
-                  next.
-                </p>
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h2 className="text-sm font-semibold">Artists</h2>
+                    <p className="mt-1 text-[11px] text-brand-text-muted">
+                      System-wide artist list with pagination.
+                    </p>
+                  </div>
+                </div>
+
+                {artistsLoading ? (
+                  <p className="text-[11px] text-brand-text-muted">
+                    Loading artists...
+                  </p>
+                ) : artistsError ? (
+                  <p className="text-[11px] text-red-300">{artistsError}</p>
+                ) : artists.length === 0 ? (
+                  <p className="text-[11px] text-brand-text-muted">
+                    No artists yet.
+                  </p>
+                ) : (
+                  <>
+                    <div className="overflow-x-auto mt-2">
+                      <table className="min-w-full text-[11px]">
+                        <thead>
+                          <tr className="border-b border-slate-800 text-left text-brand-text-muted">
+                            <th className="py-2 pr-4 font-medium">Name</th>
+                            <th className="py-2 pr-4 font-medium hidden md:table-cell">
+                              First release year
+                            </th>
+                            <th className="py-2 pr-4 font-medium hidden md:table-cell">
+                              Albums
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {artists.map((artist) => (
+                            <tr
+                              key={artist.id}
+                              className="border-b border-slate-800/60 last:border-0"
+                            >
+                              <td className="py-2 pr-4">
+                                <div className="flex flex-col">
+                                  <span className="font-medium text-brand-text">
+                                    {artist.name}
+                                  </span>
+                                  <span className="text-[11px] text-brand-text-muted">
+                                    {artist.address || '-'}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="py-2 pr-4 text-brand-text-muted hidden md:table-cell">
+                                {artist.first_release_year || '-'}
+                              </td>
+                              <td className="py-2 pr-4 text-brand-text-muted hidden md:table-cell">
+                                {artist.no_of_albums_released ?? '-'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {artistsTotalPages > 1 && (
+                      <div className="mt-3 flex items-center justify-between text-[11px] text-brand-text-muted">
+                        <span>
+                          Page {artistsPage} of {artistsTotalPages}
+                        </span>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            disabled={artistsPage <= 1 || artistsLoading}
+                            onClick={() =>
+                              !artistsLoading &&
+                              artistsPage > 1 &&
+                              setArtistsPage(artistsPage - 1)
+                            }
+                            className="rounded border border-slate-800 px-2 py-1 disabled:opacity-50"
+                          >
+                            Previous
+                          </button>
+                          <button
+                            type="button"
+                            disabled={
+                              artistsPage >= artistsTotalPages || artistsLoading
+                            }
+                            onClick={() =>
+                              !artistsLoading &&
+                              artistsPage < artistsTotalPages &&
+                              setArtistsPage(artistsPage + 1)
+                            }
+                            className="rounded border border-slate-800 px-2 py-1 disabled:opacity-50"
+                          >
+                            Next
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             )}
 
             {active === 'songs' && (
               <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-3 text-[12px]">
-                <h2 className="text-sm font-semibold">
-                  Songs
-                </h2>
-                <p className="mt-2 text-brand-text-muted">
-                  This section will show songs, genres, and related
-                  artists. It will later connect to the songs API with
-                  search and filters.
-                </p>
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h2 className="text-sm font-semibold">Songs</h2>
+                    <p className="mt-1 text-[11px] text-brand-text-muted">
+                      Global songs list with artist and genre.
+                    </p>
+                  </div>
+                </div>
+
+                {songsLoading ? (
+                  <p className="text-[11px] text-brand-text-muted">
+                    Loading songs...
+                  </p>
+                ) : songsError ? (
+                  <p className="text-[11px] text-red-300">{songsError}</p>
+                ) : songs.length === 0 ? (
+                  <p className="text-[11px] text-brand-text-muted">
+                    No songs yet.
+                  </p>
+                ) : (
+                  <>
+                    <div className="overflow-x-auto mt-2">
+                      <table className="min-w-full text-[11px]">
+                        <thead>
+                          <tr className="border-b border-slate-800 text-left text-brand-text-muted">
+                            <th className="py-2 pr-4 font-medium">Title</th>
+                            <th className="py-2 pr-4 font-medium hidden md:table-cell">
+                              Artist
+                            </th>
+                            <th className="py-2 pr-4 font-medium">
+                              Genre
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {songs.map((song) => (
+                            <tr
+                              key={song.id}
+                              className="border-b border-slate-800/60 last:border-0"
+                            >
+                              <td className="py-2 pr-4 text-brand-text">
+                                {song.title}
+                              </td>
+                              <td className="py-2 pr-4 text-brand-text-muted hidden md:table-cell">
+                                {(song as any).artist_name || song.artist_id}
+                              </td>
+                              <td className="py-2 pr-4 text-brand-text-muted capitalize">
+                                {song.genre}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {songsTotalPages > 1 && (
+                      <div className="mt-3 flex items-center justify-between text-[11px] text-brand-text-muted">
+                        <span>
+                          Page {songsPage} of {songsTotalPages}
+                        </span>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            disabled={songsPage <= 1 || songsLoading}
+                            onClick={() =>
+                              !songsLoading &&
+                              songsPage > 1 &&
+                              setSongsPage(songsPage - 1)
+                            }
+                            className="rounded border border-slate-800 px-2 py-1 disabled:opacity-50"
+                          >
+                            Previous
+                          </button>
+                          <button
+                            type="button"
+                            disabled={
+                              songsPage >= songsTotalPages || songsLoading
+                            }
+                            onClick={() =>
+                              !songsLoading &&
+                              songsPage < songsTotalPages &&
+                              setSongsPage(songsPage + 1)
+                            }
+                            className="rounded border border-slate-800 px-2 py-1 disabled:opacity-50"
+                          >
+                            Next
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             )}
 
