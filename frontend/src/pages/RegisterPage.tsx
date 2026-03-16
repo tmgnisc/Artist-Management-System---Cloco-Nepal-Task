@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { registerArtistManager } from '../services/authService'
 import { ApiError } from '../lib/apiClient'
+import { useToast } from '../components/ToastProvider'
 
 type RegisterPageProps = {
   onNavigateToLogin?: () => void
@@ -20,6 +21,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigateToLogin }) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const { showToast } = useToast()
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
@@ -36,15 +38,25 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigateToLogin }) => {
 
     try {
       await registerArtistManager(form)
-      setSuccess('Account created successfully. You can now sign in.')
+      const message = 'Account created successfully. You can now sign in.'
+      setSuccess(message)
+      showToast(message, 'success')
       if (onNavigateToLogin) {
         onNavigateToLogin()
       }
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.data?.message || 'Registration failed')
+        const fieldMessages =
+          err.data?.errors?.map((e) => e.message).join(' ') || ''
+        const fallbackMessage =
+          err.data?.message || 'Registration failed'
+        const message = fieldMessages || fallbackMessage
+        setError(message)
+        showToast(message, 'error')
       } else {
-        setError('Unable to register. Please try again.')
+        const message = 'Unable to register. Please try again.'
+        setError(message)
+        showToast(message, 'error')
       }
     } finally {
       setLoading(false)

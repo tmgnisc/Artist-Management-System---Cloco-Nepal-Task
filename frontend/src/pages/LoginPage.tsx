@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { login } from '../services/authService'
 import { ApiError } from '../lib/apiClient'
+import { useToast } from '../components/ToastProvider'
 
 type LoginPageProps = {
   onNavigateToRegister?: () => void
@@ -11,6 +12,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigateToRegister }) => {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { showToast } = useToast()
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -19,13 +21,21 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigateToRegister }) => {
 
     try {
       await login(email, password)
+      showToast('Signed in successfully', 'success')
       // Later: navigate to dashboard
-      console.log("login done")
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.data?.message || 'Invalid email or password')
+        const fieldMessages =
+          err.data?.errors?.map((e) => e.message).join(' ') || ''
+        const fallbackMessage =
+          err.data?.message || 'Invalid email or password'
+        const message = fieldMessages || fallbackMessage
+        setError(message)
+        showToast(message, 'error')
       } else {
-        setError('Unable to sign in. Please try again.')
+        const message = 'Unable to sign in. Please try again.'
+        setError(message)
+        showToast(message, 'error')
       }
     } finally {
       setLoading(false)
