@@ -42,7 +42,16 @@ JWT_REFRESH_SECRET=your-jwt-refresh-secret-key-change-in-production
 JWT_REFRESH_EXPIRES_IN=30d
 ```
 
-4. Start the server:
+4. (Optional but recommended) Configure initial super admin for seeding:
+
+```env
+SUPER_ADMIN_FIRST_NAME=Super
+SUPER_ADMIN_LAST_NAME=Admin
+SUPER_ADMIN_EMAIL=superadmin@example.com
+SUPER_ADMIN_PASSWORD=StrongPass123
+```
+
+5. Start the server:
 
 ```bash
 npm run dev
@@ -51,6 +60,32 @@ npm start
 ```
 
 The backend will be available at `http://localhost:5000`.
+
+---
+
+## Super admin seed
+
+The system expects exactly one initial `super_admin` user to be created by a seed script. Public registration is only intended for `artist_manager` accounts, and all other users are managed by the super admin.
+
+1. Ensure database tables are created by starting the server once (this triggers automatic migrations).
+
+2. Configure the super admin details in `.env` (as shown above).
+
+3. Run the seed script:
+
+```bash
+cd backend
+npm run seed:superadmin
+```
+
+4. Behavior:
+
+- If a user with role `super_admin` already exists, the script logs the existing email and exits without changes.
+- If not, it creates a new user with:
+  - `role = super_admin`
+  - Name and credentials from `SUPER_ADMIN_*` environment variables.
+
+5. After seeding, log in using the seeded super admin credentials, and use the user management APIs or admin UI to create artists and additional artist managers.
 
 ## Conventions
 

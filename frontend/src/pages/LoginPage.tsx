@@ -1,6 +1,10 @@
 import React from 'react'
 
-const LoginPage: React.FC = () => {
+type LoginPageProps = {
+  onNavigateToRegister?: () => void
+}
+
+const LoginPage: React.FC<LoginPageProps> = ({ onNavigateToRegister }) => {
   return (
     <div className="min-h-screen bg-app-gradient flex items-center justify-center px-4">
       <div className="w-full max-w-md">
@@ -74,9 +78,16 @@ const LoginPage: React.FC = () => {
           </form>
         </div>
 
-        <p className="mt-6 text-center text-xs text-brand-text-muted">
-          Use your assigned credentials to access the dashboard.
-        </p>
+        <div className="mt-6 text-center text-xs text-brand-text-muted">
+          <p>Use your assigned credentials to access the dashboard.</p>
+          <button
+            type="button"
+            onClick={onNavigateToRegister}
+            className="mt-2 font-medium text-brand-accent hover:text-brand-primary"
+          >
+            Register now
+          </button>
+        </div>
       </div>
     </div>
   )
