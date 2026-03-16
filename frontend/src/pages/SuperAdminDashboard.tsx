@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { listUsers, deleteUser, createUser, type User } from '../services/userService'
+import {
+  listUsers,
+  deleteUser,
+  createUser,
+  updateUser,
+  type User,
+} from '../services/userService'
 import { useToast } from '../components/ToastProvider'
 
 type SuperAdminDashboardProps = {
@@ -28,6 +34,26 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
     password: '',
     role: 'artist' as 'super_admin' | 'artist_manager' | 'artist',
   })
+  const [showEditUser, setShowEditUser] = useState(false)
+  const [editLoading, setEditLoading] = useState(false)
+  const [editError, setEditError] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState<{
+    id: number | null
+    first_name: string
+    last_name: string
+    email: string
+    phone?: string | null
+    role: 'super_admin' | 'artist_manager' | 'artist'
+  }>({
+    id: null,
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+    role: 'artist',
+  })
+  const [deleteTarget, setDeleteTarget] = useState<User | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
   const { showToast } = useToast()
 
   const fetchUsers = async () => {
@@ -287,25 +313,27 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                                 <>
                                   <button
                                     type="button"
-                                    disabled
-                                    className="mr-2 text-[11px] text-brand-text-muted hover:text-brand-text disabled:opacity-50"
+                                    className="mr-2 text-[11px] text-brand-text-muted hover:text-brand-text"
+                                    onClick={() => {
+                                      setEditForm({
+                                        id: user.id,
+                                        first_name: user.first_name,
+                                        last_name: user.last_name,
+                                        email: user.email,
+                                        phone: user.phone || '',
+                                        role: user.role,
+                                      })
+                                      setEditError(null)
+                                      setShowEditUser(true)
+                                    }}
                                   >
                                     Edit
                                   </button>
                                   <button
                                     type="button"
                                     className="text-[11px] text-red-300 hover:text-red-200"
-                                    onClick={async () => {
-                                      try {
-                                        await deleteUser(user.id)
-                                        showToast('User deleted', 'success')
-                                        fetchUsers()
-                                      } catch {
-                                        showToast(
-                                          'Failed to delete user',
-                                          'error',
-                                        )
-                                      }
+                                    onClick={() => {
+                                      setDeleteTarget(user)
                                     }}
                                   >
                                     Delete
@@ -502,6 +530,227 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Edit user modal */}
+      {showEditUser && editForm.id !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="w-full max-w-lg rounded-xl border border-slate-800 bg-slate-950 px-5 py-4 text-xs shadow-2xl shadow-black/60">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-brand-text">
+                Edit user
+              </h3>
+              <button
+                type="button"
+                className="text-[11px] text-brand-text-muted hover:text-brand-text"
+                onClick={() => {
+                  setShowEditUser(false)
+                  setEditError(null)
+                }}
+                disabled={editLoading}
+              >
+                Close
+              </button>
+            </div>
+            {editError && (
+              <p className="mb-2 text-[11px] text-red-300">
+                {editError}
+              </p>
+            )}
+            <form
+              className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]"
+              onSubmit={async (e) => {
+                e.preventDefault()
+                if (editForm.id == null) return
+                setEditError(null)
+                setEditLoading(true)
+                try {
+                  await updateUser(editForm.id, {
+                    first_name: editForm.first_name,
+                    last_name: editForm.last_name,
+                    email: editForm.email,
+                    phone: editForm.phone,
+                    role: editForm.role,
+                  } as any)
+                  showToast('User updated successfully', 'success')
+                  setShowEditUser(false)
+                  fetchUsers()
+                } catch (err: any) {
+                  const message =
+                    err?.data?.errors
+                      ?.map((e: any) => e.message)
+                      .join(' ') ||
+                    err?.data?.message ||
+                    'Failed to update user'
+                  setEditError(message)
+                  showToast(message, 'error')
+                } finally {
+                  setEditLoading(false)
+                }
+              }}
+            >
+              <div className="space-y-1">
+                <label className="block text-brand-text-muted">
+                  First name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editForm.first_name}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({
+                      ...prev,
+                      first_name: e.target.value,
+                    }))
+                  }
+                  className="w-full rounded border border-slate-800 bg-slate-900 px-2 py-1 text-brand-text placeholder:text-brand-text-muted focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-brand-text-muted">
+                  Last name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editForm.last_name}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({
+                      ...prev,
+                      last_name: e.target.value,
+                    }))
+                  }
+                  className="w-full rounded border border-slate-800 bg-slate-900 px-2 py-1 text-brand-text placeholder:text-brand-text-muted focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-brand-text-muted">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={editForm.email}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({
+                      ...prev,
+                      email: e.target.value,
+                    }))
+                  }
+                  className="w-full rounded border border-slate-800 bg-slate-900 px-2 py-1 text-brand-text placeholder:text-brand-text-muted focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-brand-text-muted">
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  value={editForm.phone || ''}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({
+                      ...prev,
+                      phone: e.target.value,
+                    }))
+                  }
+                  className="w-full rounded border border-slate-800 bg-slate-900 px-2 py-1 text-brand-text placeholder:text-brand-text-muted focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-brand-text-muted">
+                  Role
+                </label>
+                <select
+                  value={editForm.role}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({
+                      ...prev,
+                      role: e.target
+                        .value as 'super_admin' | 'artist_manager' | 'artist',
+                    }))
+                  }
+                  className="w-full rounded border border-slate-800 bg-slate-900 px-2 py-1 text-brand-text focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                >
+                  <option value="artist">Artist</option>
+                  <option value="artist_manager">Artist manager</option>
+                  <option value="super_admin">Super admin</option>
+                </select>
+              </div>
+              <div className="md:col-span-2 flex items-center justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  className="text-[11px] text-brand-text-muted hover:text-brand-text"
+                  onClick={() => {
+                    setShowEditUser(false)
+                    setEditError(null)
+                  }}
+                  disabled={editLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={editLoading}
+                  className="rounded-lg bg-brand-primary px-3 py-1.5 text-[11px] font-medium text-slate-950 hover:bg-brand-primary-soft disabled:opacity-60"
+                >
+                  {editLoading ? 'Saving...' : 'Save changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Delete confirmation modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="w-full max-w-sm rounded-xl border border-slate-800 bg-slate-950 px-5 py-4 text-xs shadow-2xl shadow-black/60">
+            <h3 className="text-sm font-semibold text-brand-text mb-2">
+              Delete user
+            </h3>
+            <p className="text-brand-text-muted mb-3">
+              Are you sure you want to delete{' '}
+              <span className="font-medium text-brand-text">
+                {deleteTarget.email}
+              </span>
+              ? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                className="text-[11px] text-brand-text-muted hover:text-brand-text"
+                onClick={() => {
+                  if (deleteLoading) return
+                  setDeleteTarget(null)
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deleteLoading}
+                className="rounded-lg bg-red-500 px-3 py-1.5 text-[11px] font-medium text-slate-950 hover:bg-red-400 disabled:opacity-60"
+                onClick={async () => {
+                  if (!deleteTarget) return
+                  setDeleteLoading(true)
+                  try {
+                    await deleteUser(deleteTarget.id)
+                    showToast('User deleted successfully', 'success')
+                    setDeleteTarget(null)
+                    fetchUsers()
+                  } catch {
+                    showToast(
+                      'Failed to delete user. Please try again.',
+                      'error',
+                    )
+                  } finally {
+                    setDeleteLoading(false)
+                  }
+                }}
+              >
+                {deleteLoading ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
           </div>
         </div>
       )}
