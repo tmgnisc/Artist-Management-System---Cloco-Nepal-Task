@@ -5,9 +5,21 @@ import { useToast } from '../components/ToastProvider'
 
 type LoginPageProps = {
   onNavigateToRegister?: () => void
+  onLoginSuccess?: (
+    user: {
+      id: number
+      email: string
+      role: 'super_admin' | 'artist_manager' | 'artist'
+      first_name?: string
+      last_name?: string
+    },
+  ) => void
 }
 
-const LoginPage: React.FC<LoginPageProps> = ({ onNavigateToRegister }) => {
+const LoginPage: React.FC<LoginPageProps> = ({
+  onNavigateToRegister,
+  onLoginSuccess,
+}) => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -20,8 +32,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigateToRegister }) => {
     setLoading(true)
 
     try {
-      await login(email, password)
+      const result = await login(email, password)
       showToast('Signed in successfully', 'success')
+      if (onLoginSuccess) {
+        onLoginSuccess(result.user)
+      }
       // Later: navigate to dashboard
     } catch (err) {
       if (err instanceof ApiError) {
