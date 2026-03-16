@@ -22,6 +22,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigateToLogin }) => {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const { showToast } = useToast()
+  const [showPassword, setShowPassword] = useState(false)
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
@@ -156,17 +157,51 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigateToLogin }) => {
                 >
                   Password
                 </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  className="block w-full rounded-lg border border-brand-border bg-slate-900/60 px-3 py-2 text-sm text-brand-text placeholder:text-brand-text-muted shadow-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/60"
-                  placeholder="Minimum 8 characters"
-                  value={form.password}
-                  onChange={handleChange}
-                />
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="new-password"
+                    required
+                    className="block w-full rounded-lg border border-brand-border bg-slate-900/60 px-3 py-2 pr-10 text-sm text-brand-text placeholder:text-brand-text-muted shadow-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/60"
+                    placeholder="Minimum 8 characters"
+                    value={form.password}
+                    onChange={handleChange}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute inset-y-0 right-2 flex items-center text-brand-text-muted hover:text-brand-text"
+                    aria-label={
+                      showPassword ? 'Hide password' : 'Show password'
+                    }
+                  >
+                    <svg
+                      className="h-4 w-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      {showPassword ? (
+                        <>
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-5 0-9-4-10-8 0-1.05.21-2.05.6-3" />
+                          <path d="M3 3l18 18" />
+                          <path d="M10.58 10.58A2 2 0 0 0 13.42 13.42" />
+                          <path d="M9.88 4.12A9.77 9.77 0 0 1 12 4c5 0 9 4 10 8a10.52 10.52 0 0 1-1.43 3.36" />
+                        </>
+                      ) : (
+                        <>
+                          <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8S1 12 1 12Z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </>
+                      )}
+                    </svg>
+                  </button>
+                </div>
                 <p className="text-xs text-brand-text-muted">
                   Must contain at least one uppercase letter, one lowercase letter, and one number.
                 </p>

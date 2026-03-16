@@ -41,7 +41,12 @@ const App: React.FC = () => {
 
   if (view === 'dashboard' && currentUser) {
     if (currentUser.role === 'super_admin') {
-      return <SuperAdminDashboard onLogout={handleLogout} />
+      return (
+        <SuperAdminDashboard
+          onLogout={handleLogout}
+          currentUser={currentUser}
+        />
+      )
     }
 
     // Placeholder for other roles
