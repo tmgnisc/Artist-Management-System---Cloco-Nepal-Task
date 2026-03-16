@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import SuperAdminDashboard from './pages/SuperAdminDashboard'
+import ArtistManagerDashboard from './pages/ArtistManagerDashboard'
 import type { LoginResponse } from './services/authService'
 
 type View = 'login' | 'register' | 'dashboard'
@@ -49,7 +50,19 @@ const App: React.FC = () => {
       )
     }
 
-    // Placeholder for other roles
+    if (currentUser.role === 'artist_manager') {
+      return (
+        <ArtistManagerDashboard
+          onLogout={handleLogout}
+          currentUser={{
+            id: currentUser.id,
+            role: 'artist_manager',
+          }}
+        />
+      )
+    }
+
+    // Placeholder for artist role
     return (
       <div className="min-h-screen bg-app-gradient flex items-center justify-center px-4 text-brand-text">
         <div className="text-center space-y-3">

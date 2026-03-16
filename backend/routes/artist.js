@@ -27,7 +27,7 @@ const upload = multer({
   },
 });
 
-router.use(authenticate, authorize('super_admin', 'artist'));
+router.use(authenticate, authorize('super_admin', 'artist_manager', 'artist'));
 
 router.get('/', listArtists);
 router.post('/', validateCreateArtist, createArtist);

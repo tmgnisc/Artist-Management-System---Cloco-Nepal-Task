@@ -240,7 +240,7 @@ export const importArtistsFromCsv = asyncHandler(async (req, res) => {
   }
 
   const dataRows = rows.slice(1);
-  const values = [];
+  let importedCount = 0;
 
   for (const line of dataRows) {
     const cols = line.split(',');
@@ -257,29 +257,35 @@ export const importArtistsFromCsv = asyncHandler(async (req, res) => {
       no_of_albums_released,
     ] = cols.map((c) => c.trim());
 
-    values.push([
-      name,
-      dob || null,
-      gender || null,
-      address || null,
-      first_release_year ? parseInt(first_release_year, 10) : null,
-      no_of_albums_released
-        ? parseInt(no_of_albums_released, 10)
-        : 0,
-    ]);
+    if (!name) {
+      continue;
+    }
+
+    await query(
+      `INSERT INTO artists (name, dob, gender, address, first_release_year, no_of_albums_released)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        name,
+        dob || null,
+        gender || null,
+        address || null,
+        first_release_year ? parseInt(first_release_year, 10) : null,
+        no_of_albums_released ? parseInt(no_of_albums_released, 10) : 0,
+      ]
+    );
+
+    importedCount += 1;
   }
 
-  if (values.length === 0) {
+  if (importedCount === 0) {
     throw new AppError('No valid artist rows found in CSV', 400);
   }
 
-  await query(
-    `INSERT INTO artists (name, dob, gender, address, first_release_year, no_of_albums_released)
-     VALUES ?`,
-    [values]
+  sendSuccess(
+    res,
+    { imported: importedCount },
+    'Artists imported successfully'
   );
-
-  sendSuccess(res, { imported: values.length }, 'Artists imported successfully');
 });
 
 //CSV export for artists

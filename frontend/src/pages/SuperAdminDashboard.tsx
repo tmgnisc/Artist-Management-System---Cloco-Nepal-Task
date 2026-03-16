@@ -24,6 +24,8 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
   const [users, setUsers] = useState<User[]>([])
   const [usersLoading, setUsersLoading] = useState(false)
   const [usersError, setUsersError] = useState<string | null>(null)
+  const [usersPage, setUsersPage] = useState(1)
+  const [usersTotalPages, setUsersTotalPages] = useState(1)
   const [showCreateUser, setShowCreateUser] = useState(false)
   const [createLoading, setCreateLoading] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
@@ -31,6 +33,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
     first_name: '',
     last_name: '',
     email: '',
+    phone: '',
     password: '',
     role: 'artist' as 'super_admin' | 'artist_manager' | 'artist',
   })
@@ -56,12 +59,14 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
   const [deleteLoading, setDeleteLoading] = useState(false)
   const { showToast } = useToast()
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (page = 1) => {
     try {
       setUsersLoading(true)
       setUsersError(null)
-      const response = await listUsers({ page: 1, limit: 10 })
+      const response = await listUsers({ page, limit: 5 })
       setUsers(response.users)
+      setUsersPage(response.pagination.currentPage)
+      setUsersTotalPages(response.pagination.totalPages)
     } catch (err) {
       setUsersError('Failed to load users')
       showToast('Failed to load users', 'error')
@@ -72,21 +77,21 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
 
   useEffect(() => {
     if (active === 'users') {
-      fetchUsers()
+      fetchUsers(usersPage)
     }
-  }, [active])
+  }, [active, usersPage])
 
   const navItemBase =
-    'w-full flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-colors'
+    'w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-colors'
 
   return (
     <div className="min-h-screen bg-slate-950 text-brand-text flex">
       {/* Sidebar */}
-      <aside className="hidden md:flex md:w-64 flex-col border-r border-slate-800 bg-slate-950">
-        <div className="h-16 flex items-center justify-between px-6 border-b border-brand-border">
+      <aside className="hidden md:flex md:w-56 flex-col border-r border-slate-800 bg-slate-950">
+        <div className="h-14 flex items-center justify-between px-4 border-b border-brand-border">
           <div className="flex items-center gap-2">
             <span className="inline-block h-6 w-6 rounded-lg bg-brand-primary/20" />
-            <div className="text-xs">
+            <div className="text-[11px]">
               <p className="font-semibold">Artist Studio</p>
               <p className="text-[10px] text-brand-text-muted">
                 Super admin
@@ -94,7 +99,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
             </div>
           </div>
         </div>
-        <nav className="flex-1 px-3 py-4 space-y-1 text-sm">
+        <nav className="flex-1 px-2 py-3 space-y-1">
           <button
             className={`${navItemBase} ${
               active === 'home'
@@ -136,7 +141,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
             <span>Users</span>
           </button>
         </nav>
-        <div className="px-4 py-3 border-t border-slate-800 text-xs text-brand-text-muted">
+        <div className="px-4 py-3 border-t border-slate-800 text-[11px] text-brand-text-muted">
           <p>Artist Management Studio</p>
           <p className="mt-1">v1.0.0</p>
         </div>
@@ -145,7 +150,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
       {/* Main area */}
       <div className="flex-1 flex flex-col">
         {/* Topbar */}
-        <header className="h-16 flex items-center justify-between border-b border-slate-800 bg-slate-950/90 px-4 md:px-6 shadow-md shadow-black/40">
+        <header className="h-14 flex items-center justify-between border-b border-slate-800 bg-slate-950/90 px-4 md:px-5 shadow-md shadow-black/40">
           <div className="flex items-center gap-2 md:hidden">
             <span className="inline-block h-2 w-2 rounded-full bg-brand-primary" />
             <span className="text-xs text-brand-text-muted">
@@ -153,7 +158,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <h1 className="text-sm md:text-base font-semibold tracking-tight">
+            <h1 className="text-sm font-semibold tracking-tight">
               {active === 'home'
                 ? 'Overview'
                 : active === 'artists'
@@ -173,33 +178,33 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
         </header>
 
         {/* Content */}
-        <main className="flex-1 px-4 md:px-8 py-6 md:py-8 bg-slate-950">
-          <section className="max-w-6xl mx-auto space-y-4">
+        <main className="flex-1 px-4 md:px-6 py-4 md:py-5 bg-slate-950">
+          <section className="max-w-5xl mx-auto space-y-3">
             {active === 'home' && (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-4 py-4 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-3 text-[11px]">
                     <p className="text-brand-text-muted">
                       Total artists
                     </p>
-                    <p className="mt-1 text-2xl font-semibold">0</p>
+                    <p className="mt-1 text-xl font-semibold">0</p>
                   </div>
-                  <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-4 py-4 text-xs">
+                  <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-3 text-[11px]">
                     <p className="text-brand-text-muted">
                       Total songs
                     </p>
-                    <p className="mt-1 text-2xl font-semibold">0</p>
+                    <p className="mt-1 text-xl font-semibold">0</p>
                   </div>
-                  <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-4 py-4 text-xs">
+                  <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-3 text-[11px]">
                     <p className="text-brand-text-muted">
                       Total users
                     </p>
-                    <p className="mt-1 text-2xl font-semibold">0</p>
+                    <p className="mt-1 text-xl font-semibold">0</p>
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-4 py-4 text-xs md:text-sm">
-                  <h2 className="text-sm md:text-base font-semibold">
+                <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-3 text-[12px]">
+                  <h2 className="text-sm font-semibold">
                     Welcome
                   </h2>
                   <p className="mt-2 text-brand-text-muted">
@@ -212,8 +217,8 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
             )}
 
             {active === 'artists' && (
-              <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-4 py-4 text-xs md:text-sm">
-                <h2 className="text-sm md:text-base font-semibold">
+              <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-3 text-[12px]">
+                <h2 className="text-sm font-semibold">
                   Artists
                 </h2>
                 <p className="mt-2 text-brand-text-muted">
@@ -225,8 +230,8 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
             )}
 
             {active === 'songs' && (
-              <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-4 py-4 text-xs md:text-sm">
-                <h2 className="text-sm md:text-base font-semibold">
+              <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-3 text-[12px]">
+                <h2 className="text-sm font-semibold">
                   Songs
                 </h2>
                 <p className="mt-2 text-brand-text-muted">
@@ -238,9 +243,9 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
             )}
 
             {active === 'users' && (
-              <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-4 py-4 text-xs md:text-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-sm md:text-base font-semibold">
+              <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-3 text-[12px]">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-semibold">
                     Users
                   </h2>
                   <button
@@ -256,96 +261,133 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                 </div>
 
                 {usersLoading ? (
-                  <p className="text-brand-text-muted text-xs">
+                  <p className="text-brand-text-muted text-[11px]">
                     Loading users...
                   </p>
                 ) : usersError ? (
-                  <p className="text-red-300 text-xs">{usersError}</p>
+                  <p className="text-red-300 text-[11px]">{usersError}</p>
                 ) : users.length === 0 ? (
-                  <p className="text-brand-text-muted text-xs">
+                  <p className="text-brand-text-muted text-[11px]">
                     No users found yet.
                   </p>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full text-[11px] md:text-xs">
-                      <thead>
-                        <tr className="border-b border-slate-800 text-left text-brand-text-muted">
-                          <th className="py-2 pr-4 font-medium">Name</th>
-                          <th className="py-2 pr-4 font-medium">Email</th>
-                          <th className="py-2 pr-4 font-medium">Role</th>
-                          <th className="py-2 pr-4 font-medium hidden md:table-cell">
-                            Phone
-                          </th>
-                          <th className="py-2 pr-2 font-medium text-right">
-                            Actions
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {users.map((user) => (
-                          <tr
-                            key={user.id}
-                            className="border-b border-slate-800/60 last:border-0"
-                          >
-                            <td className="py-2 pr-4">
-                              <div className="flex flex-col">
-                                <span className="font-medium text-brand-text">
-                                  {user.first_name} {user.last_name}
-                                </span>
-                              </div>
-                            </td>
-                            <td className="py-2 pr-4 text-brand-text-muted">
-                              {user.email}
-                            </td>
-                            <td className="py-2 pr-4 text-brand-text-muted capitalize">
-                              {user.role.replace('_', ' ')}
-                            </td>
-                            <td className="py-2 pr-4 text-brand-text-muted hidden md:table-cell">
-                              {user.phone || '-'}
-                            </td>
-                            <td className="py-2 pr-2 text-right">
-                              {user.role === 'super_admin' ||
-                              user.id === currentUser.id ? (
-                                <span className="text-[11px] text-brand-text-muted">
-                                  Protected
-                                </span>
-                              ) : (
-                                <>
-                                  <button
-                                    type="button"
-                                    className="mr-2 text-[11px] text-brand-text-muted hover:text-brand-text"
-                                    onClick={() => {
-                                      setEditForm({
-                                        id: user.id,
-                                        first_name: user.first_name,
-                                        last_name: user.last_name,
-                                        email: user.email,
-                                        phone: user.phone || '',
-                                        role: user.role,
-                                      })
-                                      setEditError(null)
-                                      setShowEditUser(true)
-                                    }}
-                                  >
-                                    Edit
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="text-[11px] text-red-300 hover:text-red-200"
-                                    onClick={() => {
-                                      setDeleteTarget(user)
-                                    }}
-                                  >
-                                    Delete
-                                  </button>
-                                </>
-                              )}
-                            </td>
+                  <>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full text-[11px]">
+                        <thead>
+                          <tr className="border-b border-slate-800 text-left text-brand-text-muted">
+                            <th className="py-2 pr-4 font-medium">Name</th>
+                            <th className="py-2 pr-4 font-medium">Email</th>
+                            <th className="py-2 pr-4 font-medium">Role</th>
+                            <th className="py-2 pr-4 font-medium hidden md:table-cell">
+                              Phone
+                            </th>
+                            <th className="py-2 pr-2 font-medium text-right">
+                              Actions
+                            </th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody>
+                          {users.map((user) => (
+                            <tr
+                              key={user.id}
+                              className="border-b border-slate-800/60 last:border-0"
+                            >
+                              <td className="py-2 pr-4">
+                                <div className="flex flex-col">
+                                  <span className="font-medium text-brand-text">
+                                    {user.first_name} {user.last_name}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="py-2 pr-4 text-brand-text-muted">
+                                {user.email}
+                              </td>
+                              <td className="py-2 pr-4 text-brand-text-muted capitalize">
+                                {user.role.replace('_', ' ')}
+                              </td>
+                              <td className="py-2 pr-4 text-brand-text-muted hidden md:table-cell">
+                                {user.phone || '-'}
+                              </td>
+                              <td className="py-2 pr-2 text-right">
+                                {user.role === 'super_admin' ||
+                                user.id === currentUser.id ? (
+                                  <span className="text-[11px] text-brand-text-muted">
+                                    Protected
+                                  </span>
+                                ) : (
+                                  <>
+                                    <button
+                                      type="button"
+                                      className="mr-2 text-[11px] text-brand-text-muted hover:text-brand-text"
+                                      onClick={() => {
+                                        setEditForm({
+                                          id: user.id,
+                                          first_name: user.first_name,
+                                          last_name: user.last_name,
+                                          email: user.email,
+                                          phone: user.phone || '',
+                                          role: user.role,
+                                        })
+                                        setEditError(null)
+                                        setShowEditUser(true)
+                                      }}
+                                    >
+                                      Edit
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="text-[11px] text-red-300 hover:text-red-200"
+                                      onClick={() => {
+                                        setDeleteTarget(user)
+                                      }}
+                                    >
+                                      Delete
+                                    </button>
+                                  </>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {usersTotalPages > 1 && (
+                      <div className="mt-3 flex items-center justify-between text-[11px] text-brand-text-muted">
+                        <span>
+                          Page {usersPage} of {usersTotalPages}
+                        </span>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            disabled={usersPage <= 1 || usersLoading}
+                            onClick={() =>
+                              !usersLoading &&
+                              usersPage > 1 &&
+                              setUsersPage(usersPage - 1)
+                            }
+                            className="rounded border border-slate-800 px-2 py-1 disabled:opacity-50"
+                          >
+                            Previous
+                          </button>
+                          <button
+                            type="button"
+                            disabled={
+                              usersPage >= usersTotalPages || usersLoading
+                            }
+                            onClick={() =>
+                              !usersLoading &&
+                              usersPage < usersTotalPages &&
+                              setUsersPage(usersPage + 1)
+                            }
+                            className="rounded border border-slate-800 px-2 py-1 disabled:opacity-50"
+                          >
+                            Next
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
@@ -356,7 +398,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
       {/* Create user modal */}
       {showCreateUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-          <div className="w-full max-w-lg rounded-xl border border-slate-800 bg-slate-950 px-5 py-4 text-xs shadow-2xl shadow-black/60">
+          <div className="w-full max-w-lg rounded-xl border border-slate-800 bg-slate-950 px-4 py-3 text-[11px] shadow-2xl shadow-black/60">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-brand-text">
                 Create new user
@@ -379,7 +421,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
               </p>
             )}
             <form
-              className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]"
+              className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-[11px]"
               onSubmit={async (e) => {
                 e.preventDefault()
                 setCreateError(null)
@@ -390,6 +432,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                     last_name: createForm.last_name,
                     email: createForm.email,
                     password: createForm.password,
+                    phone: createForm.phone || undefined,
                     gender: 'm',
                     role: createForm.role,
                   })
@@ -399,6 +442,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                     first_name: '',
                     last_name: '',
                     email: '',
+                    phone: '',
                     password: '',
                     role: 'artist',
                   })
@@ -431,7 +475,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                       first_name: e.target.value,
                     }))
                   }
-                  className="w-full rounded border border-slate-800 bg-slate-900 px-2 py-1 text-brand-text placeholder:text-brand-text-muted focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-2 text-brand-text placeholder:text-brand-text-muted focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
                   placeholder="John"
                 />
               </div>
@@ -449,7 +493,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                       last_name: e.target.value,
                     }))
                   }
-                  className="w-full rounded border border-slate-800 bg-slate-900 px-2 py-1 text-brand-text placeholder:text-brand-text-muted focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-2 text-brand-text placeholder:text-brand-text-muted focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
                   placeholder="Doe"
                 />
               </div>
@@ -467,11 +511,28 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                       email: e.target.value,
                     }))
                   }
-                  className="w-full rounded border border-slate-800 bg-slate-900 px-2 py-1 text-brand-text placeholder:text-brand-text-muted focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-2 text-brand-text placeholder:text-brand-text-muted focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
                   placeholder="user@example.com"
                 />
               </div>
               <div className="space-y-1">
+                <label className="block text-brand-text-muted">
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  value={createForm.phone}
+                  onChange={(e) =>
+                    setCreateForm((prev) => ({
+                      ...prev,
+                      phone: e.target.value,
+                    }))
+                  }
+                  className="w-full rounded border border-slate-800 bg-slate-900 px-2 py-1 text-brand-text placeholder:text-brand-text-muted focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                  placeholder="+1 000 000 0000"
+                />
+              </div>
+              <div className="space-y-1 md:col-span-2">
                 <label className="block text-brand-text-muted">
                   Role
                 </label>
