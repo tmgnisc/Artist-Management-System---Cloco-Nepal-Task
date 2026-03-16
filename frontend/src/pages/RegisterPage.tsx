@@ -1,6 +1,55 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { registerArtistManager } from '../services/authService'
+import { ApiError } from '../lib/apiClient'
 
-const RegisterPage: React.FC = () => {
+type RegisterPageProps = {
+  onNavigateToLogin?: () => void
+}
+
+const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigateToLogin }) => {
+  const [form, setForm] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    password: '',
+    phone: '',
+    dob: '',
+    gender: 'm' as 'm' | 'f' | 'o',
+    address: '',
+  })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+
+  const handleChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+  ) => {
+    const { name, value } = event.target
+    setForm((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
+    setError(null)
+    setSuccess(null)
+    setLoading(true)
+
+    try {
+      await registerArtistManager(form)
+      setSuccess('Account created successfully. You can now sign in.')
+      if (onNavigateToLogin) {
+        onNavigateToLogin()
+      }
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.data?.message || 'Registration failed')
+      } else {
+        setError('Unable to register. Please try again.')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
   return (
     <div className="min-h-screen bg-app-gradient flex items-center justify-center px-4">
       <div className="w-full max-w-2xl">
@@ -14,7 +63,17 @@ const RegisterPage: React.FC = () => {
         </div>
 
         <div className="bg-brand-surface backdrop-blur-xl border border-brand-border shadow-2xl shadow-black/60 rounded-2xl p-6 sm:p-8">
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            {error && (
+              <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-200">
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-200">
+                {success}
+              </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label
@@ -31,6 +90,8 @@ const RegisterPage: React.FC = () => {
                   required
                   className="block w-full rounded-lg border border-brand-border bg-slate-900/60 px-3 py-2 text-sm text-brand-text placeholder:text-brand-text-muted shadow-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/60"
                   placeholder="John"
+                  value={form.first_name}
+                  onChange={handleChange}
                 />
               </div>
 
@@ -49,6 +110,8 @@ const RegisterPage: React.FC = () => {
                   required
                   className="block w-full rounded-lg border border-brand-border bg-slate-900/60 px-3 py-2 text-sm text-brand-text placeholder:text-brand-text-muted shadow-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/60"
                   placeholder="Doe"
+                  value={form.last_name}
+                  onChange={handleChange}
                 />
               </div>
             </div>
@@ -68,6 +131,8 @@ const RegisterPage: React.FC = () => {
                 required
                 className="block w-full rounded-lg border border-brand-border bg-slate-900/60 px-3 py-2 text-sm text-brand-text placeholder:text-brand-text-muted shadow-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/60"
                 placeholder="you@example.com"
+                value={form.email}
+                onChange={handleChange}
               />
             </div>
 
@@ -87,6 +152,8 @@ const RegisterPage: React.FC = () => {
                   required
                   className="block w-full rounded-lg border border-brand-border bg-slate-900/60 px-3 py-2 text-sm text-brand-text placeholder:text-brand-text-muted shadow-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/60"
                   placeholder="Minimum 8 characters"
+                  value={form.password}
+                  onChange={handleChange}
                 />
                 <p className="text-xs text-brand-text-muted">
                   Must contain at least one uppercase letter, one lowercase letter, and one number.
@@ -107,6 +174,8 @@ const RegisterPage: React.FC = () => {
                   autoComplete="tel"
                   className="block w-full rounded-lg border border-brand-border bg-slate-900/60 px-3 py-2 text-sm text-brand-text placeholder:text-brand-text-muted shadow-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/60"
                   placeholder="+1 000 000 0000"
+                  value={form.phone}
+                  onChange={handleChange}
                 />
               </div>
             </div>
@@ -124,6 +193,8 @@ const RegisterPage: React.FC = () => {
                   name="dob"
                   type="date"
                   className="block w-full rounded-lg border border-brand-border bg-slate-900/60 px-3 py-2 text-sm text-brand-text placeholder:text-brand-text-muted shadow-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/60"
+                  value={form.dob}
+                  onChange={handleChange}
                 />
               </div>
 
@@ -137,6 +208,8 @@ const RegisterPage: React.FC = () => {
                       type="radio"
                       name="gender"
                       value="m"
+                      checked={form.gender === 'm'}
+                      onChange={handleChange}
                       className="h-3 w-3 rounded border-brand-border bg-slate-900 text-brand-primary focus:ring-brand-primary"
                     />
                     <span>Male</span>
@@ -146,6 +219,8 @@ const RegisterPage: React.FC = () => {
                       type="radio"
                       name="gender"
                       value="f"
+                      checked={form.gender === 'f'}
+                      onChange={handleChange}
                       className="h-3 w-3 rounded border-brand-border bg-slate-900 text-brand-primary focus:ring-brand-primary"
                     />
                     <span>Female</span>
@@ -155,6 +230,8 @@ const RegisterPage: React.FC = () => {
                       type="radio"
                       name="gender"
                       value="o"
+                      checked={form.gender === 'o'}
+                      onChange={handleChange}
                       className="h-3 w-3 rounded border-brand-border bg-slate-900 text-brand-primary focus:ring-brand-primary"
                     />
                     <span>Other</span>
@@ -176,6 +253,8 @@ const RegisterPage: React.FC = () => {
                 rows={3}
                 className="block w-full rounded-lg border border-brand-border bg-slate-900/60 px-3 py-2 text-sm text-brand-text placeholder:text-brand-text-muted shadow-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/60 resize-none"
                 placeholder="Street, city, country"
+                value={form.address}
+                onChange={handleChange}
               />
             </div>
 
@@ -202,16 +281,26 @@ const RegisterPage: React.FC = () => {
 
             <button
               type="submit"
-              className="inline-flex w-full items-center justify-center rounded-lg bg-brand-primary px-4 py-2.5 text-sm font-medium text-slate-950 shadow-lg shadow-brand-primary/40 transition hover:bg-brand-primary-soft focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 focus:ring-offset-slate-900"
+              disabled={loading}
+              className="inline-flex w-full items-center justify-center rounded-lg bg-brand-primary px-4 py-2.5 text-sm font-medium text-slate-950 shadow-lg shadow-brand-primary/40 transition hover:bg-brand-primary-soft focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 focus:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              Create account
+              {loading ? 'Creating account...' : 'Create account'}
             </button>
           </form>
         </div>
 
-        <p className="mt-6 text-center text-xs text-brand-text-muted">
-          All fields marked as required must be filled to create a new account.
-        </p>
+        <div className="mt-6 text-center text-xs text-brand-text-muted">
+          <p>All fields marked as required must be filled to create a new account.</p>
+          {onNavigateToLogin && (
+            <button
+              type="button"
+              onClick={onNavigateToLogin}
+              className="mt-2 font-medium text-brand-accent hover:text-brand-primary"
+            >
+              Back to sign in
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )

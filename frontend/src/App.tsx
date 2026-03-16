@@ -6,10 +6,14 @@ const App: React.FC = () => {
   const [view, setView] = useState<'login' | 'register'>('login')
 
   if (view === 'register') {
-    return <RegisterPage />
+    return (
+      <RegisterPage onNavigateToLogin={() => setView('login')} />
+    )
   }
 
-  return <LoginPage onNavigateToRegister={() => setView('register')} />
+  return (
+    <LoginPage onNavigateToRegister={() => setView('register')} />
+  )
 }
 
 export default App
