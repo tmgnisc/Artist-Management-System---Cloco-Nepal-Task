@@ -9,7 +9,7 @@ export class AppError extends Error {
 }
 
 //error handler middleware (global)
-export const errorHandler = (err, req, res, next) => {
+export const errorHandler = (err, req, res, _next) => {
   // Log all errors on the server side
   console.error(err)
 

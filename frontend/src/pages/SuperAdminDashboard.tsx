@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import {
   listUsers,
   deleteUser,
@@ -108,74 +108,83 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
     }
   }
 
-  const fetchUsers = async (page = 1) => {
-    try {
-      setUsersLoading(true)
-      setUsersError(null)
-      const response = await listUsers({ page, limit: 5 })
-      setUsers(response.items)
-      setUsersPage(response.pagination.currentPage)
-      setUsersTotalPages(response.pagination.totalPages)
-      updateStatsFromUsers(response.pagination.totalItems)
-    } catch (err) {
-      setUsersError('Failed to load users')
-      showToast('Failed to load users', 'error')
-    } finally {
-      setUsersLoading(false)
-    }
-  }
+  const fetchUsers = useCallback(
+    async (page = 1) => {
+      try {
+        setUsersLoading(true)
+        setUsersError(null)
+        const response = await listUsers({ page, limit: 5 })
+        setUsers(response.items)
+        setUsersPage(response.pagination.currentPage)
+        setUsersTotalPages(response.pagination.totalPages)
+        updateStatsFromUsers(response.pagination.totalItems)
+      } catch {
+        setUsersError('Failed to load users')
+        showToast('Failed to load users', 'error')
+      } finally {
+        setUsersLoading(false)
+      }
+    },
+    [showToast],
+  )
 
   useEffect(() => {
     if (active === 'users') {
       fetchUsers(usersPage)
     }
-  }, [active, usersPage])
+  }, [active, usersPage, fetchUsers])
 
-  const fetchArtists = async (page = 1) => {
-    try {
-      setArtistsLoading(true)
-      setArtistsError(null)
-      const res = await listArtists({ page, limit: 5 })
-      setArtists(res.items)
-      setArtistsPage(res.pagination.currentPage)
-      setArtistsTotalPages(res.pagination.totalPages)
-      updateStatsFromArtists(res)
-    } catch {
-      setArtistsError('Failed to load artists')
-      showToast('Failed to load artists', 'error')
-    } finally {
-      setArtistsLoading(false)
-    }
-  }
+  const fetchArtists = useCallback(
+    async (page = 1) => {
+      try {
+        setArtistsLoading(true)
+        setArtistsError(null)
+        const res = await listArtists({ page, limit: 5 })
+        setArtists(res.items)
+        setArtistsPage(res.pagination.currentPage)
+        setArtistsTotalPages(res.pagination.totalPages)
+        updateStatsFromArtists(res)
+      } catch {
+        setArtistsError('Failed to load artists')
+        showToast('Failed to load artists', 'error')
+      } finally {
+        setArtistsLoading(false)
+      }
+    },
+    [showToast],
+  )
 
-  const fetchSongs = async (page = 1) => {
-    try {
-      setSongsLoading(true)
-      setSongsError(null)
-      const res = await listAllSongs({ page, limit: 5 })
-      setSongs(res.items)
-      setSongsPage(res.pagination.currentPage)
-      setSongsTotalPages(res.pagination.totalPages)
-      updateStatsFromSongs(res)
-    } catch {
-      setSongsError('Failed to load songs')
-      showToast('Failed to load songs', 'error')
-    } finally {
-      setSongsLoading(false)
-    }
-  }
+  const fetchSongs = useCallback(
+    async (page = 1) => {
+      try {
+        setSongsLoading(true)
+        setSongsError(null)
+        const res = await listAllSongs({ page, limit: 5 })
+        setSongs(res.items)
+        setSongsPage(res.pagination.currentPage)
+        setSongsTotalPages(res.pagination.totalPages)
+        updateStatsFromSongs(res)
+      } catch {
+        setSongsError('Failed to load songs')
+        showToast('Failed to load songs', 'error')
+      } finally {
+        setSongsLoading(false)
+      }
+    },
+    [showToast],
+  )
 
   useEffect(() => {
     if (active === 'artists') {
       fetchArtists(artistsPage)
     }
-  }, [active, artistsPage])
+  }, [active, artistsPage, fetchArtists])
 
   useEffect(() => {
     if (active === 'songs') {
       fetchSongs(songsPage)
     }
-  }, [active, songsPage])
+  }, [active, songsPage, fetchSongs])
 
   // initial stats on mount
   useEffect(() => {

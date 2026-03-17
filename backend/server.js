@@ -39,7 +39,7 @@ app.get('/health', (req, res) => {
 })
 
 // 404 handler (for unmatched routes)
-app.use((req, res, next) => {
+app.use((req, res, _next) => {
   res.status(404).json({
     success: false,
     error: {

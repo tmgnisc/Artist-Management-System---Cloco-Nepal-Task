@@ -7,7 +7,7 @@ import {
   updateProfile,
   changePassword,
 } from '../controllers/authController.js'
-import { authenticate, authorize } from '../middleware/auth.js'
+import { authenticate } from '../middleware/auth.js'
 import {
   validateRegister,
   validateLogin,
