@@ -1,5 +1,6 @@
 import { apiRequest } from '../lib/apiClient'
 import { API_BASE_URL } from '../config/api'
+import type { PaginatedResponse, PaginationMeta } from '../types/api'
 
 export type Artist = {
   id: number
@@ -19,15 +20,7 @@ export type ArtistListParams = {
   search?: string
 }
 
-export type ArtistListResponse = {
-  artists: Artist[]
-  pagination: {
-    currentPage: number
-    totalPages: number
-    totalItems: number
-    pageSize: number
-  }
-}
+export type ArtistListResponse = PaginatedResponse<Artist>
 
 export async function listArtists(
   params: ArtistListParams = {},
@@ -38,9 +31,28 @@ export async function listArtists(
   if (params.search) query.set('search', params.search)
 
   const path = `/artists${query.toString() ? `?${query.toString()}` : ''}`
-  return apiRequest<ArtistListResponse>(path, 'GET', undefined, {
+  const res = await apiRequest<{
+    artists: Artist[]
+    pagination: PaginationMeta & { pageSize?: number }
+  }>(path, 'GET', undefined, {
     auth: true,
   })
+
+  return {
+    items: res.artists,
+    pagination: {
+      currentPage: res.pagination.currentPage,
+      totalPages: res.pagination.totalPages,
+      totalItems: res.pagination.totalItems,
+      itemsPerPage:
+        (res.pagination as PaginationMeta).itemsPerPage ??
+        // some backends use pageSize instead of itemsPerPage
+        (res.pagination as PaginationMeta & { pageSize?: number }).pageSize ??
+        10,
+      hasNextPage: (res.pagination as PaginationMeta).hasNextPage,
+      hasPrevPage: (res.pagination as PaginationMeta).hasPrevPage,
+    },
+  }
 }
 
 export type ArtistPayload = {
@@ -99,4 +111,3 @@ export async function exportArtistsCsv(): Promise<Blob> {
   }
   return response.blob()
 }
-

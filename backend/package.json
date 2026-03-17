@@ -7,6 +7,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
+    "lint": "eslint .",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,md}\"",
     "seed:superadmin": "node scripts/createSuperAdmin.js"
   },
   "keywords": [],
@@ -26,6 +28,10 @@
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
-    "@types/node": "^20.10.5"
+    "@types/node": "^20.10.5",
+    "eslint": "^8.55.0",
+    "prettier": "^3.2.5",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.0"
   }
 }

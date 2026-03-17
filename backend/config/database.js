@@ -1,11 +1,11 @@
-import mysql from 'mysql2/promise';
-import dotenv from 'dotenv';
-import { initializeTables } from './initDatabase.js';
+import mysql from 'mysql2/promise'
+import dotenv from 'dotenv'
+import { initializeTables } from './initDatabase.js'
 
-dotenv.config();
+dotenv.config()
 
-let pool = null;
-let tablesInitialized = false;
+let pool = null
+let tablesInitialized = false
 
 export const createConnection = async () => {
   if (!pool) {
@@ -17,38 +17,38 @@ export const createConnection = async () => {
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0,
-    });
+    })
 
-    console.log('Database connection pool created');
-    
+    console.log('Database connection pool created')
+
     // Initialize tables if not already done
     if (!tablesInitialized) {
       try {
-        await initializeTables();
-        tablesInitialized = true;
+        await initializeTables()
+        tablesInitialized = true
       } catch (error) {
-        console.error('Failed to initialize database tables:', error);
-        throw error;
+        console.error('Failed to initialize database tables:', error)
+        throw error
       }
     }
   }
-  return pool;
-};
+  return pool
+}
 
 export const getConnection = async () => {
   if (!pool) {
-    await createConnection();
+    await createConnection()
   }
-  return pool;
-};
+  return pool
+}
 
 export const query = async (sql, params = []) => {
-  const connection = await getConnection();
+  const connection = await getConnection()
   try {
-    const [results] = await connection.execute(sql, params);
-    return results;
+    const [results] = await connection.execute(sql, params)
+    return results
   } catch (error) {
-    console.error('Database query error:', error);
-    throw error;
+    console.error('Database query error:', error)
+    throw error
   }
-};
+}

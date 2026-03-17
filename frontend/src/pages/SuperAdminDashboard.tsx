@@ -30,7 +30,9 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
   onLogout,
   currentUser,
 }) => {
-  const [active, setActive] = useState<'home' | 'artists' | 'songs' | 'users'>('home')
+  const [active, setActive] = useState<'home' | 'artists' | 'songs' | 'users'>(
+    'home',
+  )
   const [stats, setStats] = useState<{
     artistCount: number
     songCount: number
@@ -89,14 +91,14 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
   const updateStatsFromArtists = (res: ArtistListResponse) => {
     setStats((prev) => ({
       ...prev,
-      artistCount: res.pagination.totalItems ?? res.artists.length,
+      artistCount: res.pagination.totalItems ?? res.items.length,
     }))
   }
 
   const updateStatsFromSongs = (res: SongListResponse) => {
     setStats((prev) => ({
       ...prev,
-      songCount: res.pagination.totalItems ?? res.songs.length,
+      songCount: res.pagination.totalItems ?? res.items.length,
     }))
   }
 
@@ -111,7 +113,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
       setUsersLoading(true)
       setUsersError(null)
       const response = await listUsers({ page, limit: 5 })
-      setUsers(response.users)
+      setUsers(response.items)
       setUsersPage(response.pagination.currentPage)
       setUsersTotalPages(response.pagination.totalPages)
       updateStatsFromUsers(response.pagination.totalItems)
@@ -134,7 +136,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
       setArtistsLoading(true)
       setArtistsError(null)
       const res = await listArtists({ page, limit: 5 })
-      setArtists(res.artists)
+      setArtists(res.items)
       setArtistsPage(res.pagination.currentPage)
       setArtistsTotalPages(res.pagination.totalPages)
       updateStatsFromArtists(res)
@@ -151,7 +153,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
       setSongsLoading(true)
       setSongsError(null)
       const res = await listAllSongs({ page, limit: 5 })
-      setSongs(res.songs)
+      setSongs(res.items)
       setSongsPage(res.pagination.currentPage)
       setSongsTotalPages(res.pagination.totalPages)
       updateStatsFromSongs(res)
@@ -177,7 +179,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
 
   // initial stats on mount
   useEffect(() => {
-    ;(async () => {
+    void (async () => {
       try {
         const [artistRes, songRes, userRes] = await Promise.all([
           listArtists({ page: 1, limit: 1 }),
@@ -191,7 +193,6 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
         // ignore initial stats error
       }
     })()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const navItemBase =
@@ -206,9 +207,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
             <span className="inline-block h-6 w-6 rounded-lg bg-brand-primary/20" />
             <div className="text-[11px]">
               <p className="font-semibold">Artist Studio</p>
-              <p className="text-[10px] text-brand-text-muted">
-                Super admin
-              </p>
+              <p className="text-[10px] text-brand-text-muted">Super admin</p>
             </div>
           </div>
         </div>
@@ -266,19 +265,17 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
         <header className="h-14 flex items-center justify-between border-b border-slate-800 bg-slate-950/90 px-4 md:px-5 shadow-md shadow-black/40">
           <div className="flex items-center gap-2 md:hidden">
             <span className="inline-block h-2 w-2 rounded-full bg-brand-primary" />
-            <span className="text-xs text-brand-text-muted">
-              Super admin
-            </span>
+            <span className="text-xs text-brand-text-muted">Super admin</span>
           </div>
           <div className="flex items-center gap-2">
             <h1 className="text-sm font-semibold tracking-tight">
               {active === 'home'
                 ? 'Overview'
                 : active === 'artists'
-                ? 'Artists'
-                : active === 'songs'
-                ? 'Songs'
-                : 'Users'}
+                  ? 'Artists'
+                  : active === 'songs'
+                    ? 'Songs'
+                    : 'Users'}
             </h1>
           </div>
           <button
@@ -297,25 +294,19 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-3 text-[11px]">
-                    <p className="text-brand-text-muted">
-                      Total artists
-                    </p>
+                    <p className="text-brand-text-muted">Total artists</p>
                     <p className="mt-1 text-xl font-semibold">
                       {stats.artistCount}
                     </p>
                   </div>
                   <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-3 text-[11px]">
-                    <p className="text-brand-text-muted">
-                      Total songs
-                    </p>
+                    <p className="text-brand-text-muted">Total songs</p>
                     <p className="mt-1 text-xl font-semibold">
                       {stats.songCount}
                     </p>
                   </div>
                   <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-3 text-[11px]">
-                    <p className="text-brand-text-muted">
-                      Total users
-                    </p>
+                    <p className="text-brand-text-muted">Total users</p>
                     <p className="mt-1 text-xl font-semibold">
                       {stats.userCount}
                     </p>
@@ -323,9 +314,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                 </div>
 
                 <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-3 text-[12px]">
-                  <h2 className="text-sm font-semibold">
-                    Welcome
-                  </h2>
+                  <h2 className="text-sm font-semibold">Welcome</h2>
                   <p className="mt-2 text-brand-text-muted">
                     Use the sidebar to navigate between artists, songs, and
                     users. This overview will later display key metrics and
@@ -469,9 +458,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                             <th className="py-2 pr-4 font-medium hidden md:table-cell">
                               Artist
                             </th>
-                            <th className="py-2 pr-4 font-medium">
-                              Genre
-                            </th>
+                            <th className="py-2 pr-4 font-medium">Genre</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -484,7 +471,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                                 {song.title}
                               </td>
                               <td className="py-2 pr-4 text-brand-text-muted hidden md:table-cell">
-                                {(song as any).artist_name || song.artist_id}
+                                {song.artist_name || song.artist_id}
                               </td>
                               <td className="py-2 pr-4 text-brand-text-muted capitalize">
                                 {song.genre}
@@ -537,9 +524,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
             {active === 'users' && (
               <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-3 text-[12px]">
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-sm font-semibold">
-                    Users
-                  </h2>
+                  <h2 className="text-sm font-semibold">Users</h2>
                   <button
                     type="button"
                     className="rounded-lg bg-brand-primary px-3 py-1.5 text-[11px] font-medium text-slate-950 hover:bg-brand-primary-soft"
@@ -708,9 +693,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
               </button>
             </div>
             {createError && (
-              <p className="mb-2 text-[11px] text-red-300">
-                {createError}
-              </p>
+              <p className="mb-2 text-[11px] text-red-300">{createError}</p>
             )}
             <form
               className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-[11px]"
@@ -739,13 +722,23 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                     role: 'artist',
                   })
                   fetchUsers()
-                } catch (err: any) {
+                } catch (err: unknown) {
                   const message =
-                    err?.data?.errors
-                      ?.map((e: any) => e.message)
-                      .join(' ') ||
-                    err?.data?.message ||
-                    'Failed to create user'
+                    err && typeof err === 'object' && 'data' in err
+                      ? (
+                          err as {
+                            data?: {
+                              errors?: { message: string }[]
+                              message?: string
+                            }
+                          }
+                        ).data?.errors
+                          ?.map((e) => e.message)
+                          .join(' ') ||
+                        (err as { data?: { message?: string } }).data
+                          ?.message ||
+                        'Failed to create user'
+                      : 'Failed to create user'
                   setCreateError(message)
                   showToast(message, 'error')
                 } finally {
@@ -772,9 +765,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-brand-text-muted">
-                  Last name
-                </label>
+                <label className="block text-brand-text-muted">Last name</label>
                 <input
                   type="text"
                   required
@@ -790,9 +781,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-brand-text-muted">
-                  Email
-                </label>
+                <label className="block text-brand-text-muted">Email</label>
                 <input
                   type="email"
                   required
@@ -808,9 +797,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-brand-text-muted">
-                  Phone
-                </label>
+                <label className="block text-brand-text-muted">Phone</label>
                 <input
                   type="tel"
                   value={createForm.phone}
@@ -825,16 +812,16 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                 />
               </div>
               <div className="space-y-1 md:col-span-2">
-                <label className="block text-brand-text-muted">
-                  Role
-                </label>
+                <label className="block text-brand-text-muted">Role</label>
                 <select
                   value={createForm.role}
                   onChange={(e) =>
                     setCreateForm((prev) => ({
                       ...prev,
-                      role: e.target
-                        .value as 'super_admin' | 'artist_manager' | 'artist',
+                      role: e.target.value as
+                        | 'super_admin'
+                        | 'artist_manager'
+                        | 'artist',
                     }))
                   }
                   className="w-full rounded border border-slate-800 bg-slate-900 px-2 py-1 text-brand-text focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
@@ -907,9 +894,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
               </button>
             </div>
             {editError && (
-              <p className="mb-2 text-[11px] text-red-300">
-                {editError}
-              </p>
+              <p className="mb-2 text-[11px] text-red-300">{editError}</p>
             )}
             <form
               className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]"
@@ -923,19 +908,29 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                     first_name: editForm.first_name,
                     last_name: editForm.last_name,
                     email: editForm.email,
-                    phone: editForm.phone,
+                    phone: editForm.phone || undefined,
                     role: editForm.role,
-                  } as any)
+                  })
                   showToast('User updated successfully', 'success')
                   setShowEditUser(false)
                   fetchUsers()
-                } catch (err: any) {
+                } catch (err: unknown) {
                   const message =
-                    err?.data?.errors
-                      ?.map((e: any) => e.message)
-                      .join(' ') ||
-                    err?.data?.message ||
-                    'Failed to update user'
+                    err && typeof err === 'object' && 'data' in err
+                      ? (
+                          err as {
+                            data?: {
+                              errors?: { message: string }[]
+                              message?: string
+                            }
+                          }
+                        ).data?.errors
+                          ?.map((e) => e.message)
+                          .join(' ') ||
+                        (err as { data?: { message?: string } }).data
+                          ?.message ||
+                        'Failed to update user'
+                      : 'Failed to update user'
                   setEditError(message)
                   showToast(message, 'error')
                 } finally {
@@ -961,9 +956,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-brand-text-muted">
-                  Last name
-                </label>
+                <label className="block text-brand-text-muted">Last name</label>
                 <input
                   type="text"
                   required
@@ -978,9 +971,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-brand-text-muted">
-                  Email
-                </label>
+                <label className="block text-brand-text-muted">Email</label>
                 <input
                   type="email"
                   required
@@ -995,9 +986,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-brand-text-muted">
-                  Phone
-                </label>
+                <label className="block text-brand-text-muted">Phone</label>
                 <input
                   type="tel"
                   value={editForm.phone || ''}
@@ -1011,16 +1000,16 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-brand-text-muted">
-                  Role
-                </label>
+                <label className="block text-brand-text-muted">Role</label>
                 <select
                   value={editForm.role}
                   onChange={(e) =>
                     setEditForm((prev) => ({
                       ...prev,
-                      role: e.target
-                        .value as 'super_admin' | 'artist_manager' | 'artist',
+                      role: e.target.value as
+                        | 'super_admin'
+                        | 'artist_manager'
+                        | 'artist',
                     }))
                   }
                   className="w-full rounded border border-slate-800 bg-slate-900 px-2 py-1 text-brand-text focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
@@ -1112,4 +1101,3 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
 }
 
 export default SuperAdminDashboard
-

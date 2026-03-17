@@ -1,8 +1,10 @@
 import { apiRequest } from '../lib/apiClient'
+import type { PaginatedResponse, PaginationMeta } from '../types/api'
 
 export type Song = {
   id: number
   artist_id: number
+  artist_name?: string | null
   title: string
   album_name: string | null
   genre: 'rnb' | 'country' | 'classic' | 'rock' | 'jazz'
@@ -10,14 +12,14 @@ export type Song = {
   updated_at: string
 }
 
-export type SongListResponse = {
-  songs: Song[]
-  pagination: {
-    currentPage: number
-    totalPages: number
-    totalItems?: number
-    itemsPerPage?: number
+export type SongListResponse = PaginatedResponse<Song>
+
+type ArtistWithSongsResponse = {
+  artist: {
+    id: number
+    name: string
   }
+  songs: Song[]
 }
 
 export async function listSongsForArtist(
@@ -30,12 +32,24 @@ export async function listSongsForArtist(
     limit: String(limit),
   })
 
-  return apiRequest<SongListResponse>(
+  const res = await apiRequest<ArtistWithSongsResponse>(
     `/artists/${artistId}/songs?${query.toString()}`,
     'GET',
     undefined,
-    { auth: true },
+    {
+      auth: true,
+    },
   )
+
+  return {
+    items: res.songs,
+    pagination: {
+      currentPage: page,
+      totalPages: 1,
+      totalItems: res.songs.length,
+      itemsPerPage: limit,
+    },
+  }
 }
 
 export type SongListParams = {
@@ -54,9 +68,17 @@ export async function listAllSongs(
   if (params.artistId) query.set('artistId', String(params.artistId))
 
   const path = `/songs${query.toString() ? `?${query.toString()}` : ''}`
-  return apiRequest<SongListResponse>(path, 'GET', undefined, {
+  const res = await apiRequest<{
+    songs: Song[]
+    pagination: PaginationMeta
+  }>(path, 'GET', undefined, {
     auth: true,
   })
+
+  return {
+    items: res.songs,
+    pagination: res.pagination,
+  }
 }
 
 export type SongPayload = {
@@ -68,8 +90,8 @@ export type SongPayload = {
 export async function createSongForArtist(
   artistId: number,
   payload: SongPayload,
-): Promise<{ artist: any; song: Song }> {
-  return apiRequest<{ artist: any; song: Song }>(
+): Promise<{ artist: ArtistWithSongsResponse['artist']; song: Song }> {
+  return apiRequest<{ artist: ArtistWithSongsResponse['artist']; song: Song }>(
     `/artists/${artistId}/songs`,
     'POST',
     payload,
@@ -89,5 +111,3 @@ export async function updateSong(
 export async function deleteSong(id: number): Promise<void> {
   await apiRequest(`/songs/${id}`, 'DELETE', undefined, { auth: true })
 }
-
-

@@ -2,18 +2,17 @@ import React, { useState } from 'react'
 import { login } from '../services/authService'
 import { ApiError } from '../lib/apiClient'
 import { useToast } from '../components/ToastProvider'
+import { useAuth } from '../context/AuthContext'
 
 type LoginPageProps = {
   onNavigateToRegister?: () => void
-  onLoginSuccess?: (
-    user: {
-      id: number
-      email: string
-      role: 'super_admin' | 'artist_manager' | 'artist'
-      first_name?: string
-      last_name?: string
-    },
-  ) => void
+  onLoginSuccess?: (user: {
+    id: number
+    email: string
+    role: 'super_admin' | 'artist_manager' | 'artist'
+    first_name?: string
+    last_name?: string
+  }) => void
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({
@@ -26,6 +25,7 @@ const LoginPage: React.FC<LoginPageProps> = ({
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
   const { showToast } = useToast()
+  const { login: setAuthSession } = useAuth()
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -35,6 +35,11 @@ const LoginPage: React.FC<LoginPageProps> = ({
     try {
       const result = await login(email, password)
       showToast('Signed in successfully', 'success')
+      setAuthSession({
+        user: result.user,
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+      })
       if (onLoginSuccess) {
         onLoginSuccess(result.user)
       }
@@ -43,8 +48,7 @@ const LoginPage: React.FC<LoginPageProps> = ({
       if (err instanceof ApiError) {
         const fieldMessages =
           err.data?.errors?.map((e) => e.message).join(' ') || ''
-        const fallbackMessage =
-          err.data?.message || 'Invalid email or password'
+        const fallbackMessage = err.data?.message || 'Invalid email or password'
         const message = fieldMessages || fallbackMessage
         setError(message)
         showToast(message, 'error')
@@ -188,4 +192,3 @@ const LoginPage: React.FC<LoginPageProps> = ({
 }
 
 export default LoginPage
-

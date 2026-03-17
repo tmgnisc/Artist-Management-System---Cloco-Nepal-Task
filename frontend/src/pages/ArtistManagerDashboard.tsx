@@ -9,7 +9,6 @@ import {
   type Artist,
 } from '../services/artistService'
 import {
-  listSongsForArtist,
   listAllSongs,
   createSongForArtist,
   updateSong as updateSongApi,
@@ -59,9 +58,9 @@ const ArtistManagerDashboard: React.FC<ArtistManagerDashboardProps> = ({
   const [songsPage, setSongsPage] = useState(1)
   const [songsTotalPages, setSongsTotalPages] = useState(1)
   const [songsLoading, setSongsLoading] = useState(false)
-  const [songsFilterArtistId, setSongsFilterArtistId] = useState<number | 'all'>(
-    'all',
-  )
+  const [songsFilterArtistId, setSongsFilterArtistId] = useState<
+    number | 'all'
+  >('all')
   const [songModalOpen, setSongModalOpen] = useState(false)
   const [editingSong, setEditingSong] = useState<Song | null>(null)
   const [songForm, setSongForm] = useState({
@@ -77,36 +76,23 @@ const ArtistManagerDashboard: React.FC<ArtistManagerDashboardProps> = ({
   const [deleteTarget, setDeleteTarget] = useState<Artist | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
 
-  const navItemBase =
-    'w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-colors'
-
   const loadArtists = async (page = 1, term = search) => {
     try {
       setArtistsLoading(true)
       setArtistsError(null)
-      const res = await listArtists({ page, limit: 5, search: term || undefined })
-      setArtists(res.artists)
+      const res = await listArtists({
+        page,
+        limit: 5,
+        search: term || undefined,
+      })
+      setArtists(res.items)
       setArtistsPage(res.pagination.currentPage)
       setArtistsTotalPages(res.pagination.totalPages)
-    } catch (err: any) {
+    } catch (err) {
       setArtistsError('Failed to load artists')
       showToast('Failed to load artists', 'error')
     } finally {
       setArtistsLoading(false)
-    }
-  }
-
-  const loadSongsForArtistView = async (artist: Artist, page = 1) => {
-    try {
-      setSongsLoading(true)
-      const res = await listSongsForArtist(artist.id, page, 5)
-      setSongs(res.songs)
-      setSongsPage(res.pagination.currentPage)
-      setSongsTotalPages(res.pagination.totalPages)
-    } catch {
-      showToast('Failed to load songs', 'error')
-    } finally {
-      setSongsLoading(false)
     }
   }
 
@@ -118,7 +104,7 @@ const ArtistManagerDashboard: React.FC<ArtistManagerDashboardProps> = ({
         limit: 5,
         artistId: artistId || undefined,
       })
-      setSongs(res.songs)
+      setSongs(res.items)
       setSongsPage(res.pagination.currentPage)
       setSongsTotalPages(res.pagination.totalPages)
     } catch {
@@ -201,11 +187,19 @@ const ArtistManagerDashboard: React.FC<ArtistManagerDashboardProps> = ({
       }
       setShowArtistModal(false)
       loadArtists(artistsPage)
-    } catch (err: any) {
+    } catch (err: unknown) {
       const msg =
-        err?.data?.errors?.map((e: any) => e.message).join(' ') ||
-        err?.data?.message ||
-        'Failed to save artist'
+        err && typeof err === 'object' && 'data' in err
+          ? (
+              err as {
+                data?: { errors?: { message: string }[]; message?: string }
+              }
+            ).data?.errors
+              ?.map((e) => e.message)
+              .join(' ') ||
+            (err as { data?: { message?: string } }).data?.message ||
+            'Failed to save artist'
+          : 'Failed to save artist'
       showToast(msg, 'error')
     } finally {
       setArtistSaving(false)
@@ -328,11 +322,19 @@ const ArtistManagerDashboard: React.FC<ArtistManagerDashboardProps> = ({
       }
       setActive('songs')
       setSongsPage(1)
-    } catch (err: any) {
+    } catch (err: unknown) {
       const msg =
-        err?.data?.errors?.map((e: any) => e.message).join(' ') ||
-        err?.data?.message ||
-        'Failed to save song'
+        err && typeof err === 'object' && 'data' in err
+          ? (
+              err as {
+                data?: { errors?: { message: string }[]; message?: string }
+              }
+            ).data?.errors
+              ?.map((e) => e.message)
+              .join(' ') ||
+            (err as { data?: { message?: string } }).data?.message ||
+            'Failed to save song'
+          : 'Failed to save song'
       showToast(msg, 'error')
     } finally {
       setSongSaving(false)
@@ -403,8 +405,8 @@ const ArtistManagerDashboard: React.FC<ArtistManagerDashboardProps> = ({
               {active === 'artists'
                 ? 'Artists'
                 : selectedArtist
-                ? `Songs · ${selectedArtist.name}`
-                : 'Songs'}
+                  ? `Songs · ${selectedArtist.name}`
+                  : 'Songs'}
             </h1>
           </div>
           <button
@@ -424,7 +426,8 @@ const ArtistManagerDashboard: React.FC<ArtistManagerDashboardProps> = ({
                   <div>
                     <h2 className="text-sm font-semibold">Artists</h2>
                     <p className="text-[11px] text-brand-text-muted">
-                      Manage artist records, CSV import/export, and open their songs.
+                      Manage artist records, CSV import/export, and open their
+                      songs.
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -579,8 +582,7 @@ const ArtistManagerDashboard: React.FC<ArtistManagerDashboardProps> = ({
                           <button
                             type="button"
                             disabled={
-                              artistsPage >= artistsTotalPages ||
-                              artistsLoading
+                              artistsPage >= artistsTotalPages || artistsLoading
                             }
                             onClick={() =>
                               !artistsLoading &&
@@ -603,11 +605,10 @@ const ArtistManagerDashboard: React.FC<ArtistManagerDashboardProps> = ({
               <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-3 text-[12px]">
                 <div className="flex items-center justify-between mb-2">
                   <div>
-                    <h2 className="text-sm font-semibold">
-                      Songs
-                    </h2>
+                    <h2 className="text-sm font-semibold">Songs</h2>
                     <p className="text-[11px] text-brand-text-muted">
-                      Listing of all songs. Use the artist filter to narrow down the list.
+                      Listing of all songs. Use the artist filter to narrow down
+                      the list.
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -626,7 +627,8 @@ const ArtistManagerDashboard: React.FC<ArtistManagerDashboardProps> = ({
                         } else {
                           const id = Number(value)
                           setSongsFilterArtistId(id)
-                          const artist = artists.find((a) => a.id === id) || null
+                          const artist =
+                            artists.find((a) => a.id === id) || null
                           setSelectedArtist(artist)
                           setSongsPage(1)
                         }
@@ -813,9 +815,7 @@ const ArtistManagerDashboard: React.FC<ArtistManagerDashboardProps> = ({
               </div>
 
               <div className="space-y-1">
-                <label className="block text-brand-text-muted">
-                  Gender
-                </label>
+                <label className="block text-brand-text-muted">Gender</label>
                 <select
                   value={artistForm.gender}
                   onChange={(e) =>
@@ -834,9 +834,7 @@ const ArtistManagerDashboard: React.FC<ArtistManagerDashboardProps> = ({
               </div>
 
               <div className="space-y-1 md:col-span-2">
-                <label className="block text-brand-text-muted">
-                  Address
-                </label>
+                <label className="block text-brand-text-muted">Address</label>
                 <input
                   type="text"
                   value={artistForm.address}
@@ -911,8 +909,8 @@ const ArtistManagerDashboard: React.FC<ArtistManagerDashboardProps> = ({
                       ? 'Saving...'
                       : 'Creating...'
                     : editingArtist
-                    ? 'Save changes'
-                    : 'Create'}
+                      ? 'Save changes'
+                      : 'Create'}
                 </button>
               </div>
             </form>
@@ -1050,8 +1048,8 @@ const ArtistManagerDashboard: React.FC<ArtistManagerDashboardProps> = ({
                       ? 'Saving...'
                       : 'Creating...'
                     : editingSong
-                    ? 'Save changes'
-                    : 'Create'}
+                      ? 'Save changes'
+                      : 'Create'}
                 </button>
               </div>
             </form>
@@ -1139,4 +1137,3 @@ const ArtistManagerDashboard: React.FC<ArtistManagerDashboardProps> = ({
 }
 
 export default ArtistManagerDashboard
-

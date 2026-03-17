@@ -168,7 +168,7 @@ Public user registration.
   "dob": "1990-01-01",
   "gender": "m",
   "address": "optional address",
-  "role": "artist"  
+  "role": "artist"
 }
 ```
 
@@ -430,4 +430,3 @@ As documented in the Artist section:
 - All errors go through a global error handler.
 - Validation errors include an `errors` array with field-level messages.
 - In production, stack traces are hidden; in development they are included in the response.
-

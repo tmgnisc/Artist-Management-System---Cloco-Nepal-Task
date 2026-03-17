@@ -1,19 +1,19 @@
-import express from 'express';
-import authRoutes from './auth.js';
-import userRoutes from './user.js';
-import artistRoutes from './artist.js';
-import songRoutes from './song.js';
+import express from 'express'
+import authRoutes from './auth.js'
+import userRoutes from './user.js'
+import artistRoutes from './artist.js'
+import songRoutes from './song.js'
 
-const router = express.Router();
+const router = express.Router()
 
-// testing route only 
+// testing route only
 router.get('/', (req, res) => {
-  res.json({ 
+  res.json({
     success: true,
     message: 'API is working!',
-    version: '1.0.0'
-  });
-});
+    version: '1.0.0',
+  })
+})
 
 // health check endpoint for API
 router.get('/health', (req, res) => {
@@ -21,19 +21,19 @@ router.get('/health', (req, res) => {
     success: true,
     status: 'OK',
     message: 'API health check passed',
-  });
-});
+  })
+})
 
 // Auth routes
-router.use('/auth', authRoutes);
+router.use('/auth', authRoutes)
 
 // User management routes (super_admin only)
-router.use('/users', userRoutes);
+router.use('/users', userRoutes)
 
 // Artist management routes (super_admin, artist)
-router.use('/artists', artistRoutes);
+router.use('/artists', artistRoutes)
 
 // Song admin routes (super_admin, artist_manager)
-router.use('/songs', songRoutes);
+router.use('/songs', songRoutes)
 
-export default router;
+export default router

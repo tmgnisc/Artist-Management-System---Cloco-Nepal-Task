@@ -1,5 +1,6 @@
 import { apiRequest } from '../lib/apiClient'
 import type { RegisterPayload } from './authService'
+import type { PaginatedResponse, PaginationMeta } from '../types/api'
 
 export type UserRole = 'super_admin' | 'artist_manager' | 'artist'
 
@@ -17,19 +18,7 @@ export interface User {
   updated_at?: string
 }
 
-export interface PaginationMeta {
-  currentPage: number
-  totalPages: number
-  totalItems: number
-  itemsPerPage: number
-  hasNextPage: boolean
-  hasPrevPage: boolean
-}
-
-export interface ListUsersResponse {
-  users: User[]
-  pagination: PaginationMeta
-}
+export type ListUsersResponse = PaginatedResponse<User>
 
 export interface ListUsersParams {
   page?: number
@@ -49,20 +38,25 @@ export async function listUsers(
 
   const path = `/users${query.toString() ? `?${query.toString()}` : ''}`
 
-  return apiRequest<ListUsersResponse>(path, 'GET', undefined, {
+  const res = await apiRequest<{
+    users: User[]
+    pagination: PaginationMeta
+  }>(path, 'GET', undefined, {
     auth: true,
   })
+
+  return {
+    items: res.users,
+    pagination: res.pagination,
+  }
 }
 
 export async function createUser(
   payload: RegisterPayload & { role: UserRole },
 ): Promise<User> {
-  const result = await apiRequest<{ user: User }>(
-    '/users',
-    'POST',
-    payload,
-    { auth: true },
-  )
+  const result = await apiRequest<{ user: User }>('/users', 'POST', payload, {
+    auth: true,
+  })
   return result.user
 }
 
@@ -84,4 +78,3 @@ export async function deleteUser(id: number): Promise<void> {
     auth: true,
   })
 }
-

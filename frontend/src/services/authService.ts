@@ -25,16 +25,10 @@ export interface RegisterPayload {
 }
 
 export async function login(email: string, password: string) {
-  const result = await apiRequest<LoginResponse>(
-    '/auth/login',
-    'POST',
-    { email, password },
-  )
-
-  localStorage.setItem('accessToken', result.accessToken)
-  localStorage.setItem('refreshToken', result.refreshToken)
-  localStorage.setItem('currentUser', JSON.stringify(result.user))
-
+  const result = await apiRequest<LoginResponse>('/auth/login', 'POST', {
+    email,
+    password,
+  })
   return result
 }
 
@@ -44,10 +38,5 @@ export async function registerArtistManager(payload: RegisterPayload) {
     role: 'artist_manager',
   }
 
-  return apiRequest<LoginResponse>(
-    '/auth/register',
-    'POST',
-    body,
-  )
+  return apiRequest<LoginResponse>('/auth/register', 'POST', body)
 }
-

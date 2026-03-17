@@ -25,7 +25,9 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigateToLogin }) => {
   const [showPassword, setShowPassword] = useState(false)
 
   const handleChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+    event: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     const { name, value } = event.target
     setForm((prev) => ({ ...prev, [name]: value }))
@@ -49,8 +51,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigateToLogin }) => {
       if (err instanceof ApiError) {
         const fieldMessages =
           err.data?.errors?.map((e) => e.message).join(' ') || ''
-        const fallbackMessage =
-          err.data?.message || 'Registration failed'
+        const fallbackMessage = err.data?.message || 'Registration failed'
         const message = fieldMessages || fallbackMessage
         setError(message)
         showToast(message, 'error')
@@ -203,7 +204,8 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigateToLogin }) => {
                   </button>
                 </div>
                 <p className="text-xs text-brand-text-muted">
-                  Must contain at least one uppercase letter, one lowercase letter, and one number.
+                  Must contain at least one uppercase letter, one lowercase
+                  letter, and one number.
                 </p>
               </div>
 
@@ -322,7 +324,9 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigateToLogin }) => {
                 <option value="artist_manager">Artist manager</option>
               </select>
               <p className="text-xs text-brand-text-muted">
-                Public registration is only available for artist managers. Super admin is created once by a seed script, and other users are managed from the admin panel.
+                Public registration is only available for artist managers. Super
+                admin is created once by a seed script, and other users are
+                managed from the admin panel.
               </p>
             </div>
 
@@ -337,7 +341,10 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigateToLogin }) => {
         </div>
 
         <div className="mt-6 text-center text-xs text-brand-text-muted">
-          <p>All fields marked as required must be filled to create a new account.</p>
+          <p>
+            All fields marked as required must be filled to create a new
+            account.
+          </p>
           {onNavigateToLogin && (
             <button
               type="button"
@@ -354,4 +361,3 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigateToLogin }) => {
 }
 
 export default RegisterPage
-

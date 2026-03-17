@@ -20,6 +20,8 @@ export class ApiError extends Error {
 
 interface RequestOptions extends RequestInit {
   auth?: boolean
+  skipJsonParse?: boolean
+  skipAuthRefresh?: boolean
 }
 
 export async function apiRequest<T>(
@@ -29,8 +31,13 @@ export async function apiRequest<T>(
   options: RequestOptions = {},
 ): Promise<T> {
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
     ...(options.headers || {}),
+  }
+
+  const isFormData = body instanceof FormData
+
+  if (!isFormData) {
+    headers['Content-Type'] = headers['Content-Type'] || 'application/json'
   }
 
   if (options.auth) {
@@ -43,23 +50,29 @@ export async function apiRequest<T>(
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method,
     headers,
-    body: body ? JSON.stringify(body) : undefined,
+    body: body
+      ? isFormData
+        ? (body as FormData)
+        : JSON.stringify(body)
+      : undefined,
     credentials: 'include',
     ...options,
   })
 
   const contentType = response.headers.get('Content-Type') || ''
-  const isJson = contentType.includes('application/json')
-  const data = isJson ? await response.json() : undefined
+  const isJson =
+    !options.skipJsonParse && contentType.includes('application/json')
+  const data: unknown = isJson ? await response.json() : undefined
 
   if (!response.ok) {
     const errorPayload: ApiErrorShape | undefined =
       data && typeof data === 'object'
-        ? (data.error as ApiErrorShape) || (data as ApiErrorShape)
+        ? 'error' in (data as Record<string, unknown>)
+          ? ((data as { error: ApiErrorShape }).error as ApiErrorShape)
+          : (data as ApiErrorShape)
         : undefined
     throw new ApiError(response.status, errorPayload)
   }
 
   return (data?.data ?? data) as T
 }
-

@@ -1,8 +1,8 @@
-import { getConnection } from './database.js';
+import { getConnection } from './database.js'
 
 export const initializeTables = async () => {
-  const connection = await getConnection();
-  
+  const connection = await getConnection()
+
   try {
     // Create User table
     await connection.execute(`
@@ -22,8 +22,8 @@ export const initializeTables = async () => {
         INDEX idx_email (email),
         INDEX idx_role (role)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    `);
-    console.log(' Users table initialized');
+    `)
+    console.log(' Users table initialized')
 
     // Create Artist table
     await connection.execute(`
@@ -39,8 +39,8 @@ export const initializeTables = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         INDEX idx_name (name)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    `);
-    console.log(' Artists table initialized');
+    `)
+    console.log(' Artists table initialized')
 
     // Create Song table
     await connection.execute(`
@@ -57,12 +57,12 @@ export const initializeTables = async () => {
         INDEX idx_genre (genre),
         INDEX idx_title (title)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    `);
-    console.log(' Songs table initialized');
+    `)
+    console.log(' Songs table initialized')
 
-    console.log('Database tables initialized successfully');
+    console.log('Database tables initialized successfully')
   } catch (error) {
-    console.error('Error initializing database tables:', error);
-    throw error;
+    console.error('Error initializing database tables:', error)
+    throw error
   }
-};
+}

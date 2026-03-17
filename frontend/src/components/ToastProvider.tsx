@@ -52,8 +52,8 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
               toast.variant === 'success'
                 ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-100'
                 : toast.variant === 'error'
-                ? 'border-red-500/40 bg-red-500/10 text-red-100'
-                : 'border-slate-500/40 bg-slate-800/80 text-slate-100'
+                  ? 'border-red-500/40 bg-red-500/10 text-red-100'
+                  : 'border-slate-500/40 bg-slate-800/80 text-slate-100'
 
             return (
               <div key={toast.id} className={`${base} ${variantClass}`}>
@@ -74,4 +74,3 @@ export const useToast = (): ToastContextValue => {
   }
   return ctx
 }
-
